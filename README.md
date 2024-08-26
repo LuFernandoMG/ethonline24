@@ -1,0 +1,51 @@
+# Invernez - ETHOnline 2024
+
+Invernez is a crowdleasing platform where users lease assets via collective financing. Users can lease an asset with the option to return it or buy it at the end of the term. Investors, as asset owners, earn rental income through tokenized contracts.
+
+## Project Structure
+
+- **Frontend**: Located in the `frontend/` folder, this contains all the user interface code for interacting with the Invernez platform.
+- **Smart Contracts**: Located in the `contracts/` folder, this contains the Solidity smart contracts that power the leasing and tokenization functionalities.
+
+## Project Setup
+
+### Requirements
+
+- Node.js and npm
+- Rust and Cargo
+- Foundry
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/LuFernandoMG/ethonline24.git
+
+2. Navigate to the contracts folder:
+
+    ```bash
+    cd ethonline24/contracts
+
+3. Follow the instructions in the README.md inside the contracts folder for further setup
+
+### How It Works
+
+Invernez aims to provide a decentralized platform for leasing assets. Here’s a brief overview of the process:
+
+1. **Lease Application**: Users can apply to lease an asset by submitting a leasing request.
+2. **Collective Financing**: Investors can collectively finance these leasing requests by purchasing tokens, which represent shares in the leasing contracts.
+3. **Tokenized Income**: Investors earn rental income from their investments through these tokens, which can be traded or held for returns.
+4. **End of Term Options**: At the end of the lease term, the lessee has the option to return the asset or purchase it at a pre-agreed price.
+
+### Contribution
+We welcome contributions! Please follow these steps to contribute:
+
+1. Fork the repository.
+2. Create a new branch (git checkout -b feature-branch).
+3. Make your changes and commit them (git commit -m 'Add new feature').
+4. Push to the branch (git push origin feature-branch).
+5. Open a Pull Request.
+
+### License
+This project is licensed under the MIT License - see the LICENSE file for details.

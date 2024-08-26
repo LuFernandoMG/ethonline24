@@ -1,3 +1,7 @@
+# Invernez Smart Contracts
+
+This directory contains the smart contracts for the Invernez platform, built using Foundry.
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
@@ -11,7 +15,16 @@ Foundry consists of:
 
 ## Documentation
 
-https://book.getfoundry.sh/
+For comprehensive Foundry documentation, visit [Foundry Book](https://book.getfoundry.sh/).
+
+## Installation
+
+Ensure you have Rust, Cargo, and Foundry installed. To install Foundry, follow these steps:
+
+```bash
+foundryup
+forge install
+```
 
 ## Usage
 
@@ -64,3 +77,16 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+### Smart Contracts Overview
+The smart contracts in this repository handle the core functionalities of the Invernez platform:
+
+    **CrowdLeasingContract (CLC)**: The main contract that manages the creation of leasing requests, tokenization of assets, and the distribution of rental income.
+
+## Deployment
+To deploy the smart contracts, make sure you have configured your .env file with the appropriate variables (refer to .env.example), and run the deployment script using Forge.
+
+## Testing
+Make sure to write unit tests for each function you implement to ensure contract functionality and security.
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
