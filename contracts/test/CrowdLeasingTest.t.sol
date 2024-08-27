@@ -85,4 +85,78 @@ contract CrowdLeasingTest is Test {
         clc.createLeasingRequest(1500, 60, 45, 1); // Attempt to create another request
     }
 
+    /// @notice Test to get the remaining amount for a leasing request
+    /// @dev Ensures that the getRemainingAmount function returns the correct amount
+    function testGetRemainingAmount() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1); 
+        
+        // Get the remaining amount needed to fully fund the leasing request
+        uint256 remainingAmount = clc.getRemainingAmount(1); 
+        
+        // Assert that the remaining amount is equal to the total amount requested
+        assertEq(remainingAmount, 1000); 
+    }
+
+    /// @notice Test to invest in an active leasing request
+    /// @dev Ensures that the investInLeasing function works correctly and updates the state
+    function testInvestInLeasing() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1); 
+        
+        // Fund this contract with 1000 wei to simulate an investor
+        vm.deal(address(this), 1000); 
+        
+        // Invest 500 wei in the leasing request
+        clc.investInLeasing{value: 500}(1); 
+
+        // Retrieve the leasing request details to verify correctness
+        ( , , , uint256 fundedAmount, , , , bool fulfilled, CrowdLeasingContract.State status) = clc.leasingRequests(1);
+
+        // Assert the details of the funded leasing request
+        assertEq(fundedAmount, 500); // Verify funded amount is updated to 500
+        assertEq(fulfilled, false); // Verify the request is not yet fulfilled
+        assertEq(uint(status), uint(CrowdLeasingContract.State.Active)); // Verify the status is still Active
+    }
+
+    /// @notice Test to ensure investment does not exceed remaining amount
+    /// @dev Should revert with the message "Investment exceeds the remaining funding amount"
+    function testInvestmentExceedsRemaining() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1); 
+        
+        // Fund this contract with 1000 wei to simulate an investor
+        vm.deal(address(this), 1000); 
+        
+        // Expect revert with specific error message if trying to invest more than the remaining amount
+        vm.expectRevert(bytes("Investment exceeds the remaining funding amount")); 
+        clc.investInLeasing{value: 1100}(1); // Attempt to invest 1100 wei, which exceeds the amount needed
+    }
+
+    /// @notice Test to ensure investment meets minimum token price
+    /// @dev Should revert with the message "Investment does not meet the minimum token price"
+    function testInvestmentBelowMinimum() public {
+        // Create a leasing request with token price of 2 wei
+        clc.createLeasingRequest(1000, 30, 45, 2); 
+        
+        // Expect revert with specific error message if trying to invest less than the token price
+        vm.expectRevert(bytes("Investment does not meet the minimum token price")); 
+        clc.investInLeasing{value: 1}(1); // Attempt to invest 1 wei, which is below the minimum token price of 2 wei
+    }
+
+    /// @notice Test to ensure reentrancy protection is active
+    /// @dev Ensures that reentrancy is not allowed by using the ReentrancyGuard
+    function testReentrancyProtection() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1); 
+        
+        // Attempt to invest once, should work fine
+        clc.investInLeasing{value: 500}(1); 
+        
+        // Expect revert with the message "ReentrancyGuard: reentrant call" if trying to reenter the function
+        vm.expectRevert(bytes("ReentrancyGuard: reentrant call"));
+        clc.investInLeasing{value: 500}(1); // Attempt to invest again in the same transaction
+    }
+
+
 }
