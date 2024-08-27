@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract CrowdLeasingContract {
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol"; // Import the ReentrancyGuard for protection against reentrancy attacks
+
+/// @title CrowdLeasingContract
+/// @notice This contract allows users to create and fund leasing requests collectively.
+/// @dev Implements security practices and optimized gas usage with OpenZeppelin libraries.
+contract CrowdLeasingContract is ReentrancyGuard {
     // Counter to track the total number of leasing requests
     uint256 public leaseIdCounter;
 
@@ -24,17 +29,20 @@ contract CrowdLeasingContract {
     // Mapping to store leasing requests by their unique ID
     mapping(uint256 => LeasingRequest) public leasingRequests;
 
-    // Mapping to track whether a user currently has an active leasing request.
+    // Mapping to track whether a user currently has an active leasing request
     mapping(address => bool) public hasActiveLeasingRequest;
 
     // Event emitted when a new leasing request is created
     event LeasingRequestCreated(uint256 leaseId, address indexed requester, uint256 amount, uint256 duration, uint256 fundingDeadline, uint256 tokenPrice);
 
+    // Event emitted when a leasing request is funded
+    event LeasingRequestFunded(uint256 leaseId, address indexed funder, uint256 amount, uint256 fundedAmount, uint256 numTokens);
+
     /**
      * @dev Constructor that initializes the leaseIdCounter to 0
      */
     constructor() {
-        leaseIdCounter = 0;
+        leaseIdCounter = 0; // Initialize the lease ID counter
     }
 
     /**
@@ -82,6 +90,58 @@ contract CrowdLeasingContract {
         emit LeasingRequestCreated(newLeaseId, msg.sender, _amount, _duration, fundingDeadline, _tokenPrice);
     }
 
+    /**
+     * @dev Returns the remaining amount needed to fully fund a leasing request.
+     * @param _leaseId The ID of the leasing request.
+     * @return The remaining amount needed.
+     */
+    function getRemainingAmount(uint256 _leaseId) public view returns (uint256) {
+        // Retrieve the leasing request from storage
+        LeasingRequest storage request = leasingRequests[_leaseId];
+        // Ensure the leasing request is in an active state
+        require(request.status == State.Active, "Leasing request is not active");
+        // Calculate and return the remaining amount needed
+        return request.amount - request.fundedAmount;
+    }
+
+    /**
+     * @dev Allows users to invest in an active leasing request by sending Ether.
+     * @param _leaseId The ID of the leasing request to invest in.
+     */
+    function investInLeasing(uint256 _leaseId) external payable nonReentrant {
+        // Retrieve the leasing request from storage
+        LeasingRequest storage request = leasingRequests[_leaseId];
+
+        // Ensure the leasing request is active
+        require(request.status == State.Active, "Leasing request is not active");
+        
+        // Ensure the funding deadline has not passed
+        require(block.timestamp <= request.fundingDeadline, "Funding deadline has passed");
+        
+        // Calculate the number of tokens based on the token price
+        uint256 numTokens = msg.value / request.tokenPrice;
+
+        // Ensure the investor is sending enough Ether to buy at least one token
+        require(numTokens > 0, "Investment does not meet the minimum token price");
+
+        // Calculate remaining amount needed to fully fund the request
+        uint256 remainingAmount = getRemainingAmount(_leaseId);
+
+        // Ensure the investment does not exceed the remaining amount
+        require(msg.value <= remainingAmount, "Investment exceeds the remaining funding amount");
+
+        // Update funded amount
+        request.fundedAmount += msg.value;
+
+        // Update the state if fully funded
+        if (request.fundedAmount == request.amount) {
+            request.status = State.Funded;
+            request.fulfilled = true;  // Mark the request as fulfilled
+        }
+
+        // Emit event to log the funding details
+        emit LeasingRequestFunded(_leaseId, msg.sender, msg.value, request.fundedAmount, numTokens);
+    }
+
     // Additional functions can be added here as needed to manage leasing requests
 }
-
