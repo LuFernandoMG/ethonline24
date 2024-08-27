@@ -19,15 +19,17 @@ Invernez is a crowdleasing platform where users lease assets via collective fina
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/LuFernandoMG/ethonline24.git
+    ```bash
+    git clone https://github.com/LuFernandoMG/ethonline24.git
+    ```
 
 2. Navigate to the contracts folder:
 
     ```bash
     cd ethonline24/contracts
+    ```
 
-3. Follow the instructions in the README.md inside the contracts folder for further setup
+3. Follow the instructions in the README.md inside the contracts folder for further setup.
 
 ### How It Works
 
@@ -38,14 +40,24 @@ Invernez aims to provide a decentralized platform for leasing assets. Here’s a
 3. **Tokenized Income**: Investors earn rental income from their investments through these tokens, which can be traded or held for returns.
 4. **End of Term Options**: At the end of the lease term, the lessee has the option to return the asset or purchase it at a pre-agreed price.
 
+### Current Progress
+
+1. **Smart Contracts:**
+   - Implemented the basic `CrowdLeasingContract` which allows users to create leasing requests and manage them through different states like `Pending`, `Active`, `Funded`, `Expired`, etc.
+
+2. **Frontend:**
+   - Initial setup is complete. Further development will focus on integrating the frontend with the deployed contracts.
+
 ### Contribution
+
 We welcome contributions! Please follow these steps to contribute:
 
 1. Fork the repository.
-2. Create a new branch (git checkout -b feature-branch).
-3. Make your changes and commit them (git commit -m 'Add new feature').
-4. Push to the branch (git push origin feature-branch).
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes and commit them (`git commit -m 'Add new feature'`).
+4. Push to the branch (`git push origin feature-branch`).
 5. Open a Pull Request.
 
 ### License
+
 This project is licensed under the MIT License - see the LICENSE file for details.

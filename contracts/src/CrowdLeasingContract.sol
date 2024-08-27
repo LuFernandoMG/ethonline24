@@ -2,20 +2,70 @@
 pragma solidity ^0.8.0;
 
 contract CrowdLeasingContract {
-    // Add state variables, events, and functions here
-
-    // Example state variable
+    // Counter to track the total number of leasing requests
     uint256 public leaseIdCounter;
 
-    // Constructor
+    // Structure to store details of each leasing request
+    struct LeasingRequest {
+        uint256 leaseId;       // Unique ID for the leasing request
+        address requester;     // Address of the user who created the request
+        uint256 amount;        // Amount of funding requested
+        uint256 duration;      // Duration of the lease in days
+        uint256 fundingDeadline; // Timestamp until which the leasing request can be funded
+        bool fulfilled;        // Status indicating whether the request has been fulfilled
+        State status;          // Current status of the leasing request
+    }
+
+    // Enum to represent the possible states of a leasing request
+    enum State { Pending, Active, Funded, Expired, Cancelled, Complete }
+
+    // Mapping to store leasing requests by their unique ID
+    mapping(uint256 => LeasingRequest) public leasingRequests;
+
+    // Event emitted when a new leasing request is created
+    event LeasingRequestCreated(uint256 leaseId, address indexed requester, uint256 amount, uint256 duration, uint256 fundingDeadline);
+
+    /**
+     * @dev Constructor that initializes the leaseIdCounter to 0
+     */
     constructor() {
         leaseIdCounter = 0;
     }
 
-    // Function to create a leasing request
-    function createLeasingRequest() public {
-        // Your logic here
+    /**
+     * @dev Creates a new leasing request with the specified amount, duration, and funding period.
+     * @param _amount The amount of funding needed for the lease. Must be greater than zero.
+     * @param _duration The duration of the lease in days. Must be greater than zero.
+     * @param _fundingPeriod The period within which the lease must be fully funded.
+     */
+    function createLeasingRequest(uint256 _amount, uint256 _duration, uint256 _fundingPeriod) external {
+        // Ensure that the amount requested is greater than zero
+        require(_amount > 0, "Amount must be greater than zero");
+        // Ensure that the duration of the lease is greater than zero
+        require(_duration > 0, "Duration must be greater than zero");
+        // Ensure that the funding period is greater than zero
+        require(_fundingPeriod > 0, "Funding period must be greater than zero");
+
+        // Increment the lease ID counter and assign it to a new leasing request
+        uint256 newLeaseId = ++leaseIdCounter;
+
+        // Calculate the funding deadline based on the provided funding period
+        uint256 fundingDeadline = block.timestamp + _fundingPeriod;
+
+        // Store the new leasing request in the mapping
+        leasingRequests[newLeaseId] = LeasingRequest({
+            leaseId: newLeaseId,
+            requester: msg.sender,
+            amount: _amount,
+            duration: _duration,
+            fundingDeadline: fundingDeadline,
+            fulfilled: false,
+            status: State.Active // Initial state is set to Active
+        });
+
+        // Emit an event to notify that a new leasing request has been created
+        emit LeasingRequestCreated(newLeaseId, msg.sender, _amount, _duration, fundingDeadline);
     }
 
-    // Other functions as needed
+    // Additional functions can be added here as needed to manage leasing requests
 }

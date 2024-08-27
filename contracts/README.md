@@ -27,11 +27,30 @@ forge install
 ```
 ## CrowdLeasingContract
 
-`CrowdLeasingContract` is a smart contract that serves as the basis for creating leasing requests in a crowdleasing platform. 
+The `CrowdLeasingContract` is a smart contract designed for the Invernez platform, enabling users to create leasing requests that can be collectively funded by investors. The contract is optimized for gas efficiency and security, and it includes functionality to manage different states of leasing requests.
 
 ### Functions
 
-- `createLeasingRequest`: A function to initialize a leasing request. The implementation details will be added as the development progresses.
+#### createLeasingRequest
+
+**Description:** Allows a user to initiate a leasing request on the platform.
+
+**Parameters:**
+- `_amount` (uint256): The amount of funding needed for the lease. Must be greater than zero.
+- `_duration` (uint256): The duration of the lease in days. Must be greater than zero.
+- `_fundingPeriod` (uint256): The period in seconds within which the lease must be fully funded. Must be greater than zero.
+
+**Logic:**
+- Increments the `leaseIdCounter` to assign a unique ID to the new leasing request.
+- Calculates the `fundingDeadline` based on the current block timestamp and the `_fundingPeriod`.
+- Initializes a new leasing request with state set to `Active`.
+
+**Security:**
+- Ensures that the function parameters `_amount`, `_duration`, and `_fundingPeriod` are greater than zero to prevent invalid leasing requests.
+- The function is designed to be extensible for future access control measures.
+
+**Events:**
+- `LeasingRequestCreated`: Emitted when a new leasing request is created, capturing the `leaseId`, `requester`, `amount`, `duration`, and `fundingDeadline`.
 
 ### Usage
 
