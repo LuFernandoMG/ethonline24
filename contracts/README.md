@@ -82,7 +82,7 @@ We have implemented a suite of tests for the `CrowdLeasingContract` to ensure it
 
 To run the tests, ensure you have Foundry installed and set up correctly. Then, execute the following command:
 
-```bash
+```shell
 forge test
 ```
 
