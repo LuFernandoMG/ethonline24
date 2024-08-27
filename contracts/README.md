@@ -64,11 +64,27 @@ To deploy and interact with the `CrowdLeasingContract`, follow these steps:
 $ forge build
 ```
 
-### Test
+## Testing
 
-```shell
-$ forge test
-```
+We have implemented a suite of tests for the `CrowdLeasingContract` to ensure its functionality and security.
+
+### Available Tests
+
+1. **testValidCreateLeasingRequest**: Ensures a leasing request is created correctly with valid parameters.
+2. **testInvalidAmount**: Verifies that creating a leasing request with an amount of 0 fails.
+3. **testInvalidDuration**: Checks that creating a leasing request with a duration of 0 days fails.
+4. **testInvalidFundingPeriod**: Ensures that creating a leasing request with a funding period of 0 fails.
+5. **testSingleRequestPerUser**: Confirms that a user cannot create more than one leasing request.
+6. **testExcessiveRequests**: Simulates the creation of multiple leasing requests to test the contract's ability to handle large numbers of requests.
+7. **testDosAttackSimulation**: Tests the contract's resistance to a denial-of-service attack by simulating a large number of requests from different users.
+
+### Running Tests
+
+To run the tests, ensure you have Foundry installed and set up correctly. Then, execute the following command:
+
+```bash
+forge test
+
 
 ### Format
 
