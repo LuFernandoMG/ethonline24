@@ -22,6 +22,10 @@ contract CrowdLeasingContract {
     // Mapping to store leasing requests by their unique ID
     mapping(uint256 => LeasingRequest) public leasingRequests;
 
+    // Mapping to track whether a user currently has an active leasing request.
+    mapping(address => bool) public hasActiveLeasingRequest;
+
+
     // Event emitted when a new leasing request is created
     event LeasingRequestCreated(uint256 leaseId, address indexed requester, uint256 amount, uint256 duration, uint256 fundingDeadline);
 
@@ -39,6 +43,8 @@ contract CrowdLeasingContract {
      * @param _fundingPeriod The period within which the lease must be fully funded.
      */
     function createLeasingRequest(uint256 _amount, uint256 _duration, uint256 _fundingPeriod) external {
+        // This ensures that a user can only have one active leasing request at a time.
+        require(!hasActiveLeasingRequest[msg.sender], "User already has a leasing request");
         // Ensure that the amount requested is greater than zero
         require(_amount > 0, "Amount must be greater than zero");
         // Ensure that the duration of the lease is greater than zero
@@ -62,6 +68,9 @@ contract CrowdLeasingContract {
             fulfilled: false,
             status: State.Active // Initial state is set to Active
         });
+
+        // Set the user's active leasing request to true
+        hasActiveLeasingRequest[msg.sender] = true;
 
         // Emit an event to notify that a new leasing request has been created
         emit LeasingRequestCreated(newLeaseId, msg.sender, _amount, _duration, fundingDeadline);
