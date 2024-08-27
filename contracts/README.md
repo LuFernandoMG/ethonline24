@@ -25,8 +25,19 @@ Ensure you have Rust, Cargo, and Foundry installed. To install Foundry, follow t
 foundryup
 forge install
 ```
+## CrowdLeasingContract
 
-## Usage
+`CrowdLeasingContract` is a smart contract that serves as the basis for creating leasing requests in a crowdleasing platform. 
+
+### Functions
+
+- `createLeasingRequest`: A function to initialize a leasing request. The implementation details will be added as the development progresses.
+
+### Usage
+
+To deploy and interact with the `CrowdLeasingContract`, follow these steps:
+
+1. Compile the contract:
 
 ### Build
 
