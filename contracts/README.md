@@ -84,7 +84,7 @@ To run the tests, ensure you have Foundry installed and set up correctly. Then, 
 
 ```bash
 forge test
-
+```
 
 ### Format
 
