@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol"; // Import the ReentrancyGuard for protection against reentrancy attacks
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; // Import the ReentrancyGuard for protection against reentrancy attacks
+
+import "forge-std/Test.sol"; // ELIMINAR AL TERMINAR TEST
 
 /// @title CrowdLeasingContract
 /// @notice This contract allows users to create and fund leasing requests collectively.
@@ -109,39 +111,65 @@ contract CrowdLeasingContract is ReentrancyGuard {
      * @param _leaseId The ID of the leasing request to invest in.
      */
     function investInLeasing(uint256 _leaseId) external payable nonReentrant {
-        // Retrieve the leasing request from storage
+        // Log to indicate the entry into the function with the given leaseId
+        console.log("Entering investInLeasing with leaseId:", _leaseId);
+
+        // Retrieve the leasing request from storage using the leaseId
         LeasingRequest storage request = leasingRequests[_leaseId];
 
-        // Ensure the leasing request is active
+        // Log the lease ID, current status, and funded amount before investment
+        console.log("Lease ID:", _leaseId);
+        console.log("Current status:", uint(request.status));
+        console.log("Funded amount before investment:", request.fundedAmount);
+
+        // Ensure the leasing request is active; if not, revert the transaction
         require(request.status == State.Active, "Leasing request is not active");
-        
-        // Ensure the funding deadline has not passed
+        console.log("Verified: Leasing request is active");
+
+        // Ensure the funding deadline has not passed; if it has, revert the transaction
         require(block.timestamp <= request.fundingDeadline, "Funding deadline has passed");
-        
-        // Calculate the number of tokens based on the token price
+        console.log("Verified: Funding deadline has not passed");
+
+        // Calculate the number of tokens that can be purchased with the sent Ether
         uint256 numTokens = msg.value / request.tokenPrice;
+
+        // Log the investment amount and the number of tokens calculated
+        console.log("Investment amount:", msg.value);
+        console.log("Number of tokens:", numTokens);
 
         // Ensure the investor is sending enough Ether to buy at least one token
         require(numTokens > 0, "Investment does not meet the minimum token price");
 
-        // Calculate remaining amount needed to fully fund the request
+        // Calculate the remaining amount needed to fully fund the leasing request
         uint256 remainingAmount = getRemainingAmount(_leaseId);
 
-        // Ensure the investment does not exceed the remaining amount
+        // Log the remaining amount after calculations
+        console.log("Remaining amount after calculations:", remainingAmount);
+
+        // Ensure the investment does not exceed the remaining amount; if it does, revert the transaction
         require(msg.value <= remainingAmount, "Investment exceeds the remaining funding amount");
 
-        // Update funded amount
+        // Update the funded amount with the value sent in the transaction
         request.fundedAmount += msg.value;
 
-        // Update the state if fully funded
+        // Log the updated funded amount after the investment
+        console.log("Funded amount after investment:", request.fundedAmount);
+
+        // Check if the leasing request is fully funded
         if (request.fundedAmount == request.amount) {
+            // Update the status to Funded and mark it as fulfilled
             request.status = State.Funded;
-            request.fulfilled = true;  // Mark the request as fulfilled
+            request.fulfilled = true;
+            console.log("Request is fully funded and marked as fulfilled.");
         }
 
-        // Emit event to log the funding details
+        // Log before emitting the event to indicate a successful funding
+        console.log("Emitting LeasingRequestFunded event");
+
+        // Emit an event to log the funding details
         emit LeasingRequestFunded(_leaseId, msg.sender, msg.value, request.fundedAmount, numTokens);
     }
+
 
     // Additional functions can be added here as needed to manage leasing requests
 }

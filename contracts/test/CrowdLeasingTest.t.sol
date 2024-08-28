@@ -1,8 +1,50 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol"; // Import the Forge standard testing library
 import "../src/CrowdLeasingContract.sol"; // Import the contract to be tested
+
+interface ICrowdLeasingContract {
+    function investInLeasing(uint256 _leaseId) external payable;
+}
+
+/// @title ReentrancyAttack
+/// @dev This contract is used to simulate a reentrancy attack for testing purposes
+contract ReentrancyAttack {
+    ICrowdLeasingContract public target;
+    uint256 public leaseId;
+    uint256 public attackCount;
+
+    constructor(address _targetAddress) {
+        target = ICrowdLeasingContract(_targetAddress);
+        attackCount = 0;
+    }
+
+    // Function to recursively attack until it hits a revert
+    function recursiveAttack() internal {
+        while (attackCount < 2) { // Force multiple reentrancy attempts
+            attackCount++;
+            console.log("Reentrancy attack: Attempting to reenter investInLeasing, attempt:", attackCount);
+            target.investInLeasing{value: 1 ether}(leaseId);
+        }
+    }
+
+    receive() external payable {
+        console.log("Reentrancy attack: Entering receive function, attempt:", attackCount);
+        recursiveAttack(); // Continue attacking recursively
+    }
+
+    function attack(uint256 _leaseId) external payable {
+        leaseId = _leaseId;
+        console.log("Reentrancy attack: Starting attack with leaseId", leaseId);
+        target.investInLeasing{value: msg.value}(_leaseId);
+        recursiveAttack(); // Start the recursive attack after the initial call
+    }
+
+    function resetAttack() external {
+        attackCount = 0;
+    }
+}
 
 /// @title CrowdLeasingTest
 /// @dev This contract is used to test the functionalities of the CrowdLeasingContract
@@ -119,20 +161,7 @@ contract CrowdLeasingTest is Test {
         assertEq(uint(status), uint(CrowdLeasingContract.State.Active)); // Verify the status is still Active
     }
 
-    /// @notice Test to ensure investment does not exceed remaining amount
-    /// @dev Should revert with the message "Investment exceeds the remaining funding amount"
-    function testInvestmentExceedsRemaining() public {
-        // Create a leasing request
-        clc.createLeasingRequest(1000, 30, 45, 1); 
-        
-        // Fund this contract with 1000 wei to simulate an investor
-        vm.deal(address(this), 1000); 
-        
-        // Expect revert with specific error message if trying to invest more than the remaining amount
-        vm.expectRevert(bytes("Investment exceeds the remaining funding amount")); 
-        clc.investInLeasing{value: 1100}(1); // Attempt to invest 1100 wei, which exceeds the amount needed
-    }
-
+   
     /// @notice Test to ensure investment meets minimum token price
     /// @dev Should revert with the message "Investment does not meet the minimum token price"
     function testInvestmentBelowMinimum() public {
@@ -144,18 +173,55 @@ contract CrowdLeasingTest is Test {
         clc.investInLeasing{value: 1}(1); // Attempt to invest 1 wei, which is below the minimum token price of 2 wei
     }
 
-    /// @notice Test to ensure reentrancy protection is active
-    /// @dev Ensures that reentrancy is not allowed by using the ReentrancyGuard
-    function testReentrancyProtection() public {
+    /// @notice Test to ensure investment does not exceed remaining amount
+    /// @dev Should revert with the message "Investment exceeds the remaining funding amount"
+    function testInvestmentExceedsRemaining() public {
         // Create a leasing request
-        clc.createLeasingRequest(1000, 30, 45, 1); 
+        clc.createLeasingRequest(1000, 30, 45, 1);
         
-        // Attempt to invest once, should work fine
-        clc.investInLeasing{value: 500}(1); 
+        // Fund this contract with sufficient ether
+        vm.deal(address(this), 2000);
         
-        // Expect revert with the message "ReentrancyGuard: reentrant call" if trying to reenter the function
-        vm.expectRevert(bytes("ReentrancyGuard: reentrant call"));
-        clc.investInLeasing{value: 500}(1); // Attempt to invest again in the same transaction
+        // First, invest an amount to bring remaining close to the limit
+        clc.investInLeasing{value: 900}(1);
+
+        // Expect revert with specific error message if trying to invest more than the remaining amount
+        vm.expectRevert(bytes("Investment exceeds the remaining funding amount")); 
+        clc.investInLeasing{value: 200}(1); // Attempt to invest 200 wei, which exceeds the remaining amount of 100 wei
+    }
+
+
+    /// @notice Test to ensure reentrancy protection
+    function testReentrancyProtection() public {
+        // Deploy the reentrancy attack contract
+        ReentrancyAttack attacker = new ReentrancyAttack(address(clc));
+
+        // Create a leasing request with enough room for multiple small investments
+        clc.createLeasingRequest(100 ether, 30, 45, 1 ether);
+
+        // Fund the attacker contract with sufficient Ether
+        vm.deal(address(attacker), 10 ether);
+
+        // Log start of the test
+        console.log("Starting testReentrancyProtection");
+
+        // Expect revert due to reentrancy protection
+        vm.expectRevert("ReentrancyGuard: reentrant call");
+
+        // Start the attack
+        attacker.attack{value: 1 ether}(1);
+
+        // Verify the attack count to ensure the reentrancy attempt was made multiple times
+        assertEq(attacker.attackCount(), 5, "Attack should have been attempted 5 times");
+
+        // Verify the contract state after the attack attempt
+        (, , , uint256 fundedAmount, , , , bool fulfilled, CrowdLeasingContract.State status) = clc.leasingRequests(1);
+        assertEq(fundedAmount, 1 ether, "Funded amount should be 1 ether after the reentrancy attempt");
+        assertEq(fulfilled, false, "Leasing request should not be fulfilled yet");
+        assertEq(uint(status), uint(CrowdLeasingContract.State.Active), "Leasing request should still be active");
+
+        // Log to confirm if there were more attempts
+        console.log("Attack count after attack:", attacker.attackCount());
     }
 
 
