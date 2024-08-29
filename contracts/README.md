@@ -52,6 +52,27 @@ The `CrowdLeasingContract` is a smart contract designed for the Invernez platfor
 **Events:**
 - `LeasingRequestCreated`: Emitted when a new leasing request is created, capturing the `leaseId`, `requester`, `amount`, `duration`, and `fundingDeadline`.
 
+#### investInLeasing
+
+**Description:** Allows users to invest in an active leasing request by sending Ether. This function calculates the number of tokens the investor should receive based on the amount of Ether invested and the token price.
+
+**Parameters:**
+- `_leaseId` (uint256): The ID of the leasing request to invest in.
+
+**Logic:**
+- Validates that the leasing request is active and not expired.
+- Ensures that the investment amount does not exceed the required amount to fully fund the leasing request.
+- Calculates and stores the number of tokens for the investor based on the Ether invested.
+- Updates the state of the leasing request if fully funded.
+
+**Security:**
+- Implements a cooldown-based reentrancy guard (`nonReentrantWithCooldown`) to prevent reentrancy attacks.
+- The cooldown period between interactions is currently set to 10 seconds.
+
+**Events:**
+- `LeasingRequestFunded`: Emitted when a leasing request receives funding, capturing details like the leaseId, funder, amount, fundedAmount, and numTokens.
+
+
 ### Usage
 
 To deploy and interact with the `CrowdLeasingContract`, follow these steps:
@@ -77,6 +98,12 @@ We have implemented a suite of tests for the `CrowdLeasingContract` to ensure it
 5. **testSingleRequestPerUser**: Confirms that a user cannot create more than one leasing request.
 6. **testExcessiveRequests**: Simulates the creation of multiple leasing requests to test the contract's ability to handle large numbers of requests.
 7. **testDosAttackSimulation**: Tests the contract's resistance to a denial-of-service attack by simulating a large number of requests from different users.
+8. **testInvestInLeasing**: Ensures that the `investInLeasing` function works correctly, respects the cooldown period, and updates the leasing request state.
+9. **testInvestmentBelowMinimum**: Verifies that investing less than the token price results in a failure.
+10. **testInvestmentExceedsRemaining**: Ensures that an investment exceeding the remaining funding amount fails.
+11. **testReentrancyProtection**: Tests the reentrancy protection mechanism to confirm it prevents reentrant calls effectively.
+12. **testReentrancyExplicitCheck**: Performs an explicit check to ensure the contract is safeguarded against reentrancy attacks.
+
 
 ### Running Tests
 

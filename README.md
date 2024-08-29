@@ -38,12 +38,17 @@ Invernez aims to provide a decentralized platform for leasing assets. Here’s a
 1. **Lease Application**: Users can apply to lease an asset by submitting a leasing request.
 2. **Collective Financing**: Investors can collectively finance these leasing requests by purchasing tokens, which represent shares in the leasing contracts.
 3. **Tokenized Income**: Investors earn rental income from their investments through these tokens, which can be traded or held for returns.
-4. **End of Term Options**: At the end of the lease term, the lessee has the option to return the asset or purchase it at a pre-agreed price.
+4. **Security Measures**: The platform includes safeguards such as reentrancy protection with a cooldown period to ensure that all interactions are secure and protected from typical smart contract vulnerabilities.
+5. **End of Term Options**: At the end of the lease term, the lessee has the option to return the asset or purchase it at a pre-agreed price.
+
 
 ### Current Progress
 
 1. **Smart Contracts:**
    - Implemented the basic `CrowdLeasingContract` which allows users to create leasing requests and manage them through different states like `Pending`, `Active`, `Funded`, `Expired`, etc.
+    - Enhanced `CrowdLeasingContract` with additional security measures, including cooldown-based reentrancy protection for the `investInLeasing` function.
+    - Comprehensive test coverage to ensure the robustness and security of the smart contract, including reentrancy protection and edge cases for investment.
+
 
 2. **Frontend:**
    - Initial setup is complete. Further development will focus on integrating the frontend with the deployed contracts.
