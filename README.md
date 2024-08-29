@@ -48,6 +48,8 @@ Invernez aims to provide a decentralized platform for leasing assets. Here’s a
    - Implemented the basic `CrowdLeasingContract` which allows users to create leasing requests and manage them through different states like `Pending`, `Active`, `Funded`, `Expired`, etc.
     - Enhanced `CrowdLeasingContract` with additional security measures, including cooldown-based reentrancy protection for the `investInLeasing` function.
     - Comprehensive test coverage to ensure the robustness and security of the smart contract, including reentrancy protection and edge cases for investment.
+    - Implemented `mintTokens` and `distributeTokens` functions to handle the minting and distribution of ERC20 tokens when a leasing request is fully funded.
+   - Integrated OpenZeppelin libraries for ERC20, ReentrancyGuard, and Ownable for security and standard compliance.
 
 
 2. **Frontend:**

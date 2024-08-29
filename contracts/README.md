@@ -73,6 +73,20 @@ The `CrowdLeasingContract` is a smart contract designed for the Invernez platfor
 - `LeasingRequestFunded`: Emitted when a leasing request receives funding, capturing details like the leaseId, funder, amount, fundedAmount, and numTokens.
 
 
+### Mint and Distribute Tokens
+
+**mintTokens**: This function is called when a leasing request is fully funded. It mints ERC20 tokens equivalent to the amount funded for each investor. 
+
+**distributeTokens**: After minting, this function distributes the tokens to the investors based on their investment.
+
+**Security Considerations**: 
+- `mintTokens` and `distributeTokens` are protected by `onlyOwner` to ensure that only the platform can mint and distribute tokens.
+- Uses OpenZeppelin's `ReentrancyGuard` to prevent reentrancy attacks and `Ownable` for access control.
+
+**Events:**
+- `TokensMinted`: Emitted when tokens are minted successfully.
+
+
 ### Usage
 
 To deploy and interact with the `CrowdLeasingContract`, follow these steps:
