@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "openzeppelin/security/ReentrancyGuard.sol"; // Import the ReentrancyGuard for protection against reentrancy attacks
+import "openzeppelin/security/ReentrancyGuard.sol"; // Protection against reentrancy attacks
+import "openzeppelin/token/ERC20/ERC20.sol"; // Standard ERC20 token
+import "openzeppelin/access/Ownable.sol"; // Access control mechanism
 
 /// @title CrowdLeasingContract
 /// @notice This contract allows users to create and fund leasing requests collectively.
 /// @dev Implements security practices and optimized gas usage with OpenZeppelin libraries.
-contract CrowdLeasingContract is ReentrancyGuard {
+contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
     // Counter to track the total number of leasing requests
     uint256 public leaseIdCounter;
 
@@ -24,7 +26,7 @@ contract CrowdLeasingContract is ReentrancyGuard {
     }
 
     // Enum to represent the possible states of a leasing request
-    enum State { Pending, Active, Funded, Expired, Cancelled, Complete }
+    enum State { Pending, Active, Funded, Minted, Expired, Cancelled, Complete }
 
     // Mapping to store leasing requests by their unique ID
     mapping(uint256 => LeasingRequest) public leasingRequests;
@@ -35,37 +37,27 @@ contract CrowdLeasingContract is ReentrancyGuard {
     // Mapping to store the number of tokens for each investor per leaseId
     mapping(uint256 => mapping(address => uint256)) public investorTokens; 
 
-    // Mapping to track if an account is temporarily locked
+    // Mapping to track if an account is temporarily locked to prevent reentrancy
     mapping(address => bool) private lockedAccounts;
 
-    // Mapping to track
+    // Mapping to store the last interaction timestamp for each address
     mapping(address => uint256) private lastInteraction;
 
-
-    // Define the cooldown period in seconds (e.g., 30 seconds)
+    // Define the cooldown period in seconds (e.g., 10 seconds)
     uint256 private constant COOLDOWN_PERIOD = 10;
 
     // Modifier to prevent reentrancy with a cooldown period
     modifier nonReentrantWithCooldown() {
         require(!lockedAccounts[msg.sender], "ReentrancyGuard: reentrant call");
-        
-        // Check the last interaction timestamp
         require(block.timestamp >= lastInteraction[msg.sender] + COOLDOWN_PERIOD, "ReentrancyGuard: cooldown period active");
 
-        // Lock the account
         lockedAccounts[msg.sender] = true;
-
-        // Update the last interaction timestamp
         lastInteraction[msg.sender] = block.timestamp;
 
-        // Execute the function
-        _;
+        _; // Execute the function
 
-        // Unlock the account
         lockedAccounts[msg.sender] = false;
     }
-
-
 
     // Event emitted when a new leasing request is created
     event LeasingRequestCreated(
@@ -86,10 +78,16 @@ contract CrowdLeasingContract is ReentrancyGuard {
         uint256 numTokens
     );
 
+    // Event emitted when tokens have been minted
+    event TokensMinted(uint256 leaseId, uint256 totalTokensMinted);
+
+    // Event emitted when tokens have been distributed
+    event TokensDistributed(uint256 leaseId);
+
     /**
-     * @dev Constructor that initializes the leaseIdCounter to 0
+     * @dev Constructor that initializes the leaseIdCounter and sets the ERC20 token name and symbol.
      */
-    constructor() {
+    constructor() ERC20("LeasingToken", "LST") {
         leaseIdCounter = 0; // Initialize the lease ID counter
     }
 
@@ -108,22 +106,14 @@ contract CrowdLeasingContract is ReentrancyGuard {
     ) external {
         // Ensure that a user can only have one active leasing request at a time
         require(!hasActiveLeasingRequest[msg.sender], "User already has a leasing request");
-        // Ensure that the amount requested is greater than zero
         require(_amount > 0, "Amount must be greater than zero");
-        // Ensure that the duration of the lease is greater than zero
         require(_duration > 0, "Duration must be greater than zero");
-        // Ensure that the funding period is greater than zero
         require(_fundingPeriod > 0, "Funding period must be greater than zero");
-        // Ensure that the token price is greater than zero
         require(_tokenPrice > 0, "Token price must be greater than zero");
 
-        // Increment the lease ID counter and assign it to a new leasing request
         uint256 newLeaseId = ++leaseIdCounter;
-
-        // Calculate the funding deadline based on the provided funding period
         uint256 fundingDeadline = block.timestamp + _fundingPeriod;
 
-        // Store the new leasing request in the mapping
         leasingRequests[newLeaseId] = LeasingRequest({
             leaseId: newLeaseId,
             requester: msg.sender,
@@ -136,7 +126,6 @@ contract CrowdLeasingContract is ReentrancyGuard {
             status: State.Active // Initial state is set to Active
         });
 
-        // Set the user's active leasing request to true
         hasActiveLeasingRequest[msg.sender] = true;
 
         // Emit an event to notify that a new leasing request has been created
@@ -149,11 +138,8 @@ contract CrowdLeasingContract is ReentrancyGuard {
      * @return The remaining amount needed.
      */
     function getRemainingAmount(uint256 _leaseId) public view returns (uint256) {
-        // Retrieve the leasing request from storage
         LeasingRequest storage request = leasingRequests[_leaseId];
-        // Ensure the leasing request is in an active state
         require(request.status == State.Active, "Leasing request is not active");
-        // Calculate and return the remaining amount needed
         return request.amount - request.fundedAmount;
     }
 
@@ -164,43 +150,75 @@ contract CrowdLeasingContract is ReentrancyGuard {
      * @param _leaseId The ID of the leasing request to invest in.
      */
     function investInLeasing(uint256 _leaseId) external payable nonReentrantWithCooldown {
-         // Retrieve the leasing request from storage using the leaseId
         LeasingRequest storage request = leasingRequests[_leaseId];
-
-        // Ensure the leasing request is active
         require(request.status == State.Active, "Leasing request is not active");
-
-        // Ensure the current time is before the funding deadline
         require(block.timestamp <= request.fundingDeadline, "Funding deadline has passed");
 
-        // Calculate the number of tokens the investor should receive based on the token price
         uint256 numTokens = msg.value / request.tokenPrice;
-
-        // Ensure the investment amount is sufficient to purchase at least one token
         require(numTokens > 0, "Investment does not meet the minimum token price");
 
-        // Calculate the remaining amount needed to fully fund the leasing request
         uint256 remainingAmount = request.amount - request.fundedAmount;
-
-        // Ensure the investment does not exceed the remaining funding amount
         require(msg.value <= remainingAmount, "Investment exceeds the remaining funding amount");
 
-        // Update the funded amount to include the new investment
         request.fundedAmount += msg.value;
-
-        // Store the number of tokens purchased by the investor based on leaseId and investor address
         investorTokens[_leaseId][msg.sender] += numTokens;
 
-        // Check if the leasing request is now fully funded
         if (request.fundedAmount == request.amount) {
-            request.status = State.Funded; // Update the status to funded
-            request.fulfilled = true; // Mark the request as fulfilled
+            request.status = State.Funded;
+            request.fulfilled = true;
+            mintTokens(_leaseId); // Automatically mint tokens when funding is complete
         }
 
-        // Emit an event to notify that a leasing request has been funded
         emit LeasingRequestFunded(_leaseId, msg.sender, msg.value, request.fundedAmount, numTokens);
     }
 
+    /**
+     * @dev Mints tokens for a funded leasing request.
+     * This function is called automatically once the leasing request is fully funded.
+     * @param _leaseId The ID of the leasing request for which tokens are being minted.
+     */
+    function mintTokens(uint256 _leaseId) internal {
+        LeasingRequest storage request = leasingRequests[_leaseId];
+        require(request.status == State.Funded, "Leasing request is not funded yet");
+        uint256 totalTokens = request.amount / request.tokenPrice;
+
+        _mint(address(this), totalTokens);
+        request.status = State.Minted;
+
+        emit TokensMinted(_leaseId, totalTokens);
+
+        // Start distribution in batches
+        distributeTokensInBatches(_leaseId, 0);
+    }
+
+    /**
+     * @dev Internal function to distribute tokens in batches to investors.
+     * This function is called after tokens have been minted to distribute them efficiently.
+     * @param _leaseId The ID of the leasing request for which tokens are being distributed.
+     * @param startIndex The starting index for the batch distribution.
+     */
+    function distributeTokensInBatches(uint256 _leaseId, uint256 startIndex) internal {
+        LeasingRequest storage request = leasingRequests[_leaseId];
+        require(request.status == State.Minted, "Tokens have not been minted yet");
+
+        uint256 batchSize = 10; // Number of investors per batch
+        uint256 endIndex = startIndex + batchSize;
+
+        for (uint256 i = startIndex; i < endIndex && i <= leaseIdCounter; i++) {
+            address investor = address(uint160(i));
+            uint256 tokens = investorTokens[_leaseId][investor];
+            if (tokens > 0) {
+                _transfer(address(this), investor, tokens);
+                investorTokens[_leaseId][investor] = 0;
+            }
+        }
+
+        if (endIndex < leaseIdCounter) {
+            distributeTokensInBatches(_leaseId, endIndex); // Continue distributing in batches
+        } else {
+            emit TokensDistributed(_leaseId); // Emit an event once distribution is complete
+        }
+    }
 
     // Additional functions can be added here as needed to manage leasing requests
 }
