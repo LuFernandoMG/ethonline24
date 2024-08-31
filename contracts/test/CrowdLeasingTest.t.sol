@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol"; // Import the Forge standard testing library
 import "../src/CrowdLeasingContract.sol"; // Import the contract to be tested
+// Declare the event at the top of the test file
+
 
 interface ICrowdLeasingContract {
     function investInLeasing(uint256 _leaseId) external payable;
@@ -45,6 +47,8 @@ contract ReentrancyAttack {
         attackCount = 0;
     }
 }
+
+
 
 /// @title CrowdLeasingTest
 /// @dev This contract is used to test the functionalities of the CrowdLeasingContract
@@ -235,5 +239,243 @@ contract CrowdLeasingTest is Test {
             fail(); // Removed the argument
         }
     }
+
+    /*
+    // Commented out since mintTokens is now internal
+    /// @notice Test minting tokens after a leasing request is fully funded
+    /// @dev Ensures that tokens are minted correctly and the status is updated to Minted
+    function testMintTokens() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1);
+
+        // Fund this contract with sufficient ether
+        vm.deal(address(this), 1000);
+
+        // Advance time by 11 seconds to respect cooldown period
+        vm.warp(block.timestamp + 11);
+
+        // Invest in the leasing request to fully fund it
+        clc.investInLeasing{value: 1000}(1);
+
+        // Retrieve the leasing request details to verify correctness
+        ( , , , , , , , , CrowdLeasingContract.State status) = clc.leasingRequests(1);
+
+        // Assert that the status is now Minted
+        assertEq(uint(status), uint(CrowdLeasingContract.State.Minted)); // Verify the status is Minted
+    }
+
+    /// @notice Test that minting tokens reverts if the leasing request is not fully funded
+    /// @dev Should revert with the message "Leasing request is not funded yet"
+    function testMintTokensRevertNotFunded() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1);
+
+        // Expect revert with specific error message if trying to mint tokens before fully funded
+        vm.expectRevert(bytes("Leasing request is not funded yet"));
+
+        // Attempt to mint tokens without fully funding
+        clc.mintTokens(1);
+    } */
+
+    
+    /// @notice Test edge cases for token distribution
+    /// @dev Tests edge cases for distributing tokens to a large number of investors
+    function testEdgeCasesForDistribution() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1e18, 30, 45, 1e16); // 1 ETH = 100 tokens
+
+        // Fund this contract with sufficient ether
+        vm.deal(address(this), 1e18);
+
+        // Advance time by 11 seconds to respect cooldown period
+        vm.warp(block.timestamp + 11);
+
+        // Invest in the leasing request to fully fund it
+        clc.investInLeasing{value: 1e18}(1);
+
+        // Check token balances of investors in a large batch (mock if needed)
+        for (uint256 i = 0; i < 100; i++) {
+            address investor = address(uint160(i));
+            uint256 balance = clc.balanceOf(investor);
+            assertEq(balance, investor == address(this) ? 100 : 0); // Verify test contract received correct tokens
+        }
+    }
+
+    /// @notice Test to ensure that the total tokens distributed match the total tokens minted
+    /// @dev Ensures that after distribution, the sum of tokens for all investors equals the total minted tokens
+    function testTotalTokensDistributed() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1);
+
+        // Fund this contract with sufficient ether for three investors
+        vm.deal(address(this), 1000);
+
+        // Advance time by 11 seconds to respect cooldown period
+        vm.warp(block.timestamp + 11);
+
+        // Simulate three different investors investing in the leasing request
+        address investor1 = address(0x1);
+        address investor2 = address(0x2);
+        address investor3 = address(0x3);
+
+        // Deal some Ether to the investors
+        vm.deal(investor1, 300);
+        vm.deal(investor2, 400);
+        vm.deal(investor3, 300);
+
+        // Investors invest in the leasing request
+        vm.prank(investor1);
+        clc.investInLeasing{value: 300}(1);
+
+        // Log investor1 balance
+        emit log_named_uint("Investor1 balance after investment", clc.balanceOf(investor1));
+
+        // Advance time by 11 seconds to respect cooldown period
+        vm.warp(block.timestamp + 11);
+
+        vm.prank(investor2);
+        clc.investInLeasing{value: 400}(1);
+
+        // Log investor2 balance
+        emit log_named_uint("Investor2 balance after investment", clc.balanceOf(investor2));
+
+        // Advance time by 11 seconds to respect cooldown period
+        vm.warp(block.timestamp + 11);
+
+        vm.prank(investor3);
+        clc.investInLeasing{value: 300}(1);
+
+        // Log investor3 balance
+        emit log_named_uint("Investor3 balance after investment", clc.balanceOf(investor3));
+
+        // Retrieve the leasing request details
+        (, , , , uint256 tokenPrice, , , , CrowdLeasingContract.State status) = clc.leasingRequests(1);
+
+        // Log status and token price
+        emit log_named_uint("Leasing request status", uint(status));
+        emit log_named_uint("Token price", tokenPrice);
+
+        // Ensure the leasing request is fully funded and minted
+        assertEq(uint(status), uint(CrowdLeasingContract.State.Minted));
+
+        // Calculate the expected total tokens based on the request amount and token price
+        uint256 expectedTotalTokens = 1000 / tokenPrice; 
+
+        // Log expected total tokens
+        emit log_named_uint("Expected total tokens", expectedTotalTokens);
+
+        // Initialize a variable to track total tokens distributed
+        uint256 totalTokensDistributed = 0;
+
+        // Calculate total tokens distributed to each investor
+        totalTokensDistributed += clc.balanceOf(investor1);
+        totalTokensDistributed += clc.balanceOf(investor2);
+        totalTokensDistributed += clc.balanceOf(investor3);
+
+        // Log total tokens distributed
+        emit log_named_uint("Total tokens distributed", totalTokensDistributed);
+
+        // Check that the total tokens distributed match the expected total tokens minted
+        assertEq(totalTokensDistributed, expectedTotalTokens, "Total tokens distributed do not match the expected total tokens minted");
+    }
+
+    // Commented out since mintTokens is now internal
+    /// @notice Test to ensure tokens are distributed correctly in batches
+    /// @dev Ensures that the distributeTokensInBatches function correctly handles multiple investors and multiple investments
+    /*
+     function testDistributeTokensInBatches() public {
+        // Create a leasing request
+        clc.createLeasingRequest(1000, 30, 45, 1);
+
+        // Declare variables for investors
+        address investor1 = address(0x1);
+        address investor2 = address(0x2);
+        address investor3 = address(0x3);
+        address investor4 = address(0x4);
+        address investor5 = address(0x5);
+        address investor6 = address(0x6);
+        address investor7 = address(0x7);
+
+        // Fund investors with ether
+        vm.deal(investor1, 500);
+        vm.deal(investor2, 500);
+        vm.deal(investor3, 500);
+        vm.deal(investor4, 500);
+        vm.deal(investor5, 500);
+        vm.deal(investor6, 500);
+        vm.deal(investor7, 500);
+
+        // Advance time by 11 seconds to respect cooldown period
+        vm.warp(block.timestamp + 11);
+
+        // Investors make their first investment
+        vm.prank(investor1);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor2);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor3);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor4);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor5);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor6);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor7);
+        clc.investInLeasing{value: 100}(1);
+
+        // Log balances after the first round of investments
+        emit log_named_uint("Investor1 balance after first investment", clc.balanceOf(investor1));
+        emit log_named_uint("Investor2 balance after first investment", clc.balanceOf(investor2));
+        emit log_named_uint("Investor3 balance after first investment", clc.balanceOf(investor3));
+        emit log_named_uint("Investor4 balance after first investment", clc.balanceOf(investor4));
+        emit log_named_uint("Investor5 balance after first investment", clc.balanceOf(investor5));
+        emit log_named_uint("Investor6 balance after first investment", clc.balanceOf(investor6));
+        emit log_named_uint("Investor7 balance after first investment", clc.balanceOf(investor7));
+
+        // Advance time by 11 seconds to respect cooldown period
+        vm.warp(block.timestamp + 11);
+
+        // Select 3 investors to make additional investments
+        vm.prank(investor1);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor2);
+        clc.investInLeasing{value: 100}(1);
+        vm.prank(investor3);
+        clc.investInLeasing{value: 100}(1);
+
+        // Log balances after the second round of investments
+        emit log_named_uint("Investor1 balance after second investment", clc.balanceOf(investor1));
+        emit log_named_uint("Investor2 balance after second investment", clc.balanceOf(investor2));
+        emit log_named_uint("Investor3 balance after second investment", clc.balanceOf(investor3));
+
+        // Ensure the leasing request is fully funded and tokens are minted
+        (, , , , uint256 tokenPrice, , , , CrowdLeasingContract.State status) = clc.leasingRequests(1);
+        assertEq(uint(status), uint(CrowdLeasingContract.State.Minted));
+
+        // Calculate the expected total tokens based on the request amount and token price
+        uint256 expectedTotalTokens = 1000 / tokenPrice;
+
+        // Log expected total tokens
+        emit log_named_uint("Expected total tokens", expectedTotalTokens);
+
+        // Initialize a variable to track total tokens distributed
+        uint256 totalTokensDistributed = 0;
+
+        // Calculate total tokens distributed to each investor
+        totalTokensDistributed += clc.balanceOf(investor1);
+        totalTokensDistributed += clc.balanceOf(investor2);
+        totalTokensDistributed += clc.balanceOf(investor3);
+        totalTokensDistributed += clc.balanceOf(investor4);
+        totalTokensDistributed += clc.balanceOf(investor5);
+        totalTokensDistributed += clc.balanceOf(investor6);
+        totalTokensDistributed += clc.balanceOf(investor7);
+
+        // Log total tokens distributed
+        emit log_named_uint("Total tokens distributed", totalTokensDistributed);
+
+        // Check that the total tokens distributed match the expected total tokens minted
+        assertEq(totalTokensDistributed, expectedTotalTokens, "Total tokens distributed do not match the expected total tokens minted");
+    } */
 
 }

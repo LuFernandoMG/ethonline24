@@ -43,6 +43,10 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
     // Mapping to store the last interaction timestamp for each address
     mapping(address => uint256) private lastInteraction;
 
+    // Array to store unique investors for each leasing request
+    mapping(uint256 => address[]) public investorsList;
+
+
     // Define the cooldown period in seconds (e.g., 10 seconds)
     uint256 private constant COOLDOWN_PERIOD = 10;
 
@@ -151,26 +155,32 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
      */
     function investInLeasing(uint256 _leaseId) external payable nonReentrantWithCooldown {
         LeasingRequest storage request = leasingRequests[_leaseId];
-        require(request.status == State.Active, "Leasing request is not active");
-        require(block.timestamp <= request.fundingDeadline, "Funding deadline has passed");
+        require(request.status == State.Active, "Leasing request is not active"); // Check if the leasing request is active
+        require(block.timestamp <= request.fundingDeadline, "Funding deadline has passed"); // Ensure the funding deadline has not passed
 
         uint256 numTokens = msg.value / request.tokenPrice;
-        require(numTokens > 0, "Investment does not meet the minimum token price");
+        require(numTokens > 0, "Investment does not meet the minimum token price"); // Ensure the investment amount meets the minimum token price
 
         uint256 remainingAmount = request.amount - request.fundedAmount;
-        require(msg.value <= remainingAmount, "Investment exceeds the remaining funding amount");
+        require(msg.value <= remainingAmount, "Investment exceeds the remaining funding amount"); // Ensure the investment does not exceed the remaining funding amount
 
         request.fundedAmount += msg.value;
         investorTokens[_leaseId][msg.sender] += numTokens;
 
+        if (investorTokens[_leaseId][msg.sender] == numTokens) {
+            investorsList[_leaseId].push(msg.sender); // Add the investor to the investors list if this is their first investment
+        }
+
         if (request.fundedAmount == request.amount) {
-            request.status = State.Funded;
-            request.fulfilled = true;
+            request.status = State.Funded; // Update status to Funded
+            request.fulfilled = true; // Mark the request as fulfilled
             mintTokens(_leaseId); // Automatically mint tokens when funding is complete
         }
 
+        // Emit an event to notify that a leasing request has been funded
         emit LeasingRequestFunded(_leaseId, msg.sender, msg.value, request.fundedAmount, numTokens);
     }
+
 
     /**
      * @dev Mints tokens for a funded leasing request.
@@ -198,23 +208,28 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
      * @param startIndex The starting index for the batch distribution.
      */
     function distributeTokensInBatches(uint256 _leaseId, uint256 startIndex) internal {
+        // Retrieve the leasing request
         LeasingRequest storage request = leasingRequests[_leaseId];
-        require(request.status == State.Minted, "Tokens have not been minted yet");
+        require(request.status == State.Minted, "Tokens have not been minted yet"); // Ensure tokens have been minted
 
-        uint256 batchSize = 10; // Number of investors per batch
-        uint256 endIndex = startIndex + batchSize;
+        uint256 batchSize = 10; // Define the number of investors to process per batch
+        uint256 endIndex = startIndex + batchSize; // Calculate the end index for this batch
+        address[] storage investors = investorsList[_leaseId]; // Get the list of investors for the given leaseId
 
-        for (uint256 i = startIndex; i < endIndex && i <= leaseIdCounter; i++) {
-            address investor = address(uint160(i));
-            uint256 tokens = investorTokens[_leaseId][investor];
+        // Iterate over the list of investors for the given leaseId within the batch size
+        for (uint256 i = startIndex; i < endIndex && i < investors.length; i++) {
+            address investor = investors[i];
+            uint256 tokens = investorTokens[_leaseId][investor]; // Retrieve the number of tokens the investor should receive
+
             if (tokens > 0) {
-                _transfer(address(this), investor, tokens);
-                investorTokens[_leaseId][investor] = 0;
+                _transfer(address(this), investor, tokens); // Transfer tokens to the investor
+                investorTokens[_leaseId][investor] = 0; // Reset token count for the investor after transfer
             }
         }
 
-        if (endIndex < leaseIdCounter) {
-            distributeTokensInBatches(_leaseId, endIndex); // Continue distributing in batches
+        // Continue distributing in batches if there are more investors
+        if (endIndex < investors.length) {
+            distributeTokensInBatches(_leaseId, endIndex); // Recursively distribute tokens in the next batch
         } else {
             emit TokensDistributed(_leaseId); // Emit an event once distribution is complete
         }
