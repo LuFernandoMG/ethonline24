@@ -80,8 +80,7 @@ The `CrowdLeasingContract` is a smart contract designed for the Invernez platfor
 **distributeTokens**: After minting, this function distributes the tokens to the investors based on their investment.
 
 **Security Considerations**: 
-- `mintTokens` and `distributeTokens` are protected by `onlyOwner` to ensure that only the platform can mint and distribute tokens.
-- Uses OpenZeppelin's `ReentrancyGuard` to prevent reentrancy attacks and `Ownable` for access control.
+- Uses OpenZeppelin's `ReentrancyGuard` to prevent reentrancy attacks.
 
 **Events:**
 - `TokensMinted`: Emitted when tokens are minted successfully.
@@ -117,6 +116,18 @@ We have implemented a suite of tests for the `CrowdLeasingContract` to ensure it
 10. **testInvestmentExceedsRemaining**: Ensures that an investment exceeding the remaining funding amount fails.
 11. **testReentrancyProtection**: Tests the reentrancy protection mechanism to confirm it prevents reentrant calls effectively.
 12. **testReentrancyExplicitCheck**: Performs an explicit check to ensure the contract is safeguarded against reentrancy attacks.
+
+
+### Testing the New Features
+
+The recent updates to the smart contract include tests to ensure that the new mapping and token distribution logic function correctly:
+
+- **testDistributeTokensInBatches**: Verifies that tokens are distributed correctly in batches, considering multiple investors and multiple investments.
+- **Test Investors with Multiple Investments**: Ensures that investors who invest multiple times receive the correct total amount of tokens.
+
+**Important Note**:
+- Some tests related to internal functions may be commented out or removed after confirming functionality to prevent access to these functions from outside the contract.
+
 
 
 ### Running Tests
@@ -168,6 +179,20 @@ $ cast --help
 The smart contracts in this repository handle the core functionalities of the Invernez platform:
 
     **CrowdLeasingContract (CLC)**: The main contract that manages the creation of leasing requests, tokenization of assets, and the distribution of rental income.
+
+
+### To Do
+
+The following features are planned for future updates to enhance the functionality and security of the smart contracts:
+
+1. **Withdrawals by the Owner**: Functions will be added to allow the contract owner to withdraw funds safely and securely, adhering to best practices.
+   
+2. **Leasing Payment Functionality**: A system for regular leasing payments will be implemented, ensuring smooth operation and proper accounting for lease payments.
+   
+3. **Asset Liquidation Process**: This will enable the platform to manage and liquidate assets if leasing payments are defaulted, protecting the investments of users.
+   
+4. **Lease Renewal Options**: Functions to support lease renewal, providing more options for users who wish to continue using the leased assets.
+
 
 ## Deployment
 To deploy the smart contracts, make sure you have configured your .env file with the appropriate variables (refer to .env.example), and run the deployment script using Forge.
