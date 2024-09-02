@@ -50,6 +50,23 @@ Invernez aims to provide a decentralized platform for leasing assets. Here’s a
     - Comprehensive test coverage to ensure the robustness and security of the smart contract, including reentrancy protection and edge cases for investment.
     - Implemented `mintTokens` and `distributeTokens` functions to handle the minting and distribution of ERC20 tokens when a leasing request is fully funded.
    - Integrated OpenZeppelin libraries for ERC20, ReentrancyGuard, and Ownable for security and standard compliance.
+   - Added a new mapping (`investorsByLeaseId`) to improve the efficiency of token distribution by tracking unique investors for each leasing request.
+    - Refined the investment and token distribution process to ensure accurate tracking and distribution, especially for investors who make multiple investments.
+
+
+### To Do
+
+Here are the functionalities that are planned to be added to the Invernez platform in the future:
+
+1. **Withdrawals by the Owner**: Implement functions to allow the owner (Invernez) to withdraw funds. This is crucial for purchasing assets on behalf of lessees.
+   
+2. **Leasing Payment Function**: Develop a function to handle regular leasing payments from users. This will facilitate the ongoing lease agreements and revenue collection.
+   
+3. **Asset Liquidation**: Add functionality to handle asset liquidation in case the leasing payments are not met. This is important to protect investor funds.
+   
+4. **Contract Renewal**: Provide an option for lessees to renew their lease at the end of the term, allowing for flexibility and extended asset use.
+
+
 
 
 2. **Frontend:**

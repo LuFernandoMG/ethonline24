@@ -88,11 +88,24 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
     // Event emitted when tokens have been distributed
     event TokensDistributed(uint256 leaseId);
 
+    // Modified Constructor to accept token name and symbol
     /**
      * @dev Constructor that initializes the leaseIdCounter and sets the ERC20 token name and symbol.
+     * @param _tokenName The name of the ERC20 token.
+     * @param _tokenSymbol The symbol of the ERC20 token.
      */
-    constructor() ERC20("LeasingToken", "LST") {
+    constructor(string memory _tokenName, string memory _tokenSymbol) ERC20(_tokenName, _tokenSymbol) {
         leaseIdCounter = 0; // Initialize the lease ID counter
+    }
+
+    // Improved setOwner function with error handling
+    /**
+     * @dev Sets the owner of the contract to the specified address.
+     * @param newOwner The address of the new owner.
+     */
+    function setOwner(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "New owner is the zero address"); // Check that newOwner is not zero address
+        transferOwnership(newOwner);
     }
 
     /**
