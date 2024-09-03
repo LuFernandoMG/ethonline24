@@ -57,7 +57,7 @@ contract CrowdLeasingTest is Test {
 
     /// @notice Sets up the testing environment before each test
     function setUp() public {
-        clc = new CrowdLeasingContract(); // Deploy a new instance of CrowdLeasingContract before each test
+        clc = new CrowdLeasingContract("TestToken", "TTK"); // Deploy a new instance of CrowdLeasingContract before each test
     }
 
     /// @notice Test the valid creation of a leasing request

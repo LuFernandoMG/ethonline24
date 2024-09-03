@@ -9,7 +9,12 @@ contract CrowdLeasingDeploy is Script {
 
     function run() public {
         vm.startBroadcast();
-        new CrowdLeasingContract();
+        string memory tokenName = "DefaultToken";
+        string memory tokenSymbol = "DFT";
+
+        new CrowdLeasingContract(tokenName, tokenSymbol);
+
         vm.stopBroadcast();
     }
 }
+
