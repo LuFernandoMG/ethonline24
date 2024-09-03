@@ -10,7 +10,7 @@ contract FactoryDeploy is Script {
     function run() public {
         vm.startBroadcast();
 
-        // Despliega el contrato factory
+        // Deploy factory Contract
         new CrowdLeasingFactory();
 
         vm.stopBroadcast();
