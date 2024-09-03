@@ -20,6 +20,28 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+
+
+## Contract Integration
+
+To interact with the smart contracts from the frontend, follow these steps:
+
+1. **Setup Environment Variables:**
+   - In the `frontend` directory, create a `.env.local` file with the following content:
+     ```
+     NEXT_PUBLIC_ROOTSTOCK_RPC_URL=your_rpc_url
+     NEXT_PUBLIC_FACTORY_CONTRACT_ADDRESS=your_factory_contract_address
+     ```
+   - Replace `your_rpc_url` with the Rootstock RPC URL and `your_factory_contract_address` with the deployed factory contract address.
+
+2. **Update Contract ABI:**
+   - Ensure the ABI file `CrowdLeasingFactory.json` is placed in `frontend/abi`. This file is necessary for interacting with the contract using Web3 or Ethers.js.
+
+3. **Developing and Testing:**
+   - Start the development server with `npm run dev` or `yarn dev`.
+   - The frontend is set up to interact with the smart contracts using the configuration in `frontend/src/contract.js`.
+
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

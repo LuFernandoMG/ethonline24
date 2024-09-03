@@ -25,6 +25,22 @@ Ensure you have Rust, Cargo, and Foundry installed. To install Foundry, follow t
 foundryup
 forge install
 ```
+
+### Setting Up RPC and Wallet
+
+1. **Obtain an RPC URL:**
+   - Register for an API key at [Rootstock RPC Dashboard](https://dashboard.rpc.rootstock.io/register). Follow the instructions to get your API key and set up the RPC URL.
+
+2. **Configure Wallet on MetaMask:**
+   - Open MetaMask and add a new network with the following details:
+     - **Network Name**: Rootstock Testnet
+     - **New RPC URL**: [Your RPC URL from the Rootstock RPC Dashboard]
+     - **Chain ID**: [Rootstock Testnet Chain ID=31]
+     - **Currency Symbol**: RSK
+     - **Block Explorer URL**: https://explorer.testnet.rsk.co
+   - Save the network and switch to it to interact with the deployed contracts.
+
+
 ## CrowdLeasingContract
 
 The `CrowdLeasingContract` is a smart contract designed for the Invernez platform, enabling users to create leasing requests that can be collectively funded by investors. The contract is optimized for gas efficiency and security, and it includes functionality to manage different states of leasing requests.

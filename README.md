@@ -57,10 +57,37 @@ Invernez aims to provide a decentralized platform for leasing assets. Here’s a
    - Integrated factory contract deployment script (`FactoryDeploy.s.sol`) to automate the deployment process.
 
     - **Factory Deployment:**
-  - Successfully deployed the `CrowdLeasingFactory` contract on the Rootstock testnet.
-  - This factory contract allows the creation of multiple `CrowdLeasingContract` instances dynamically, facilitating decentralized leasing operations on the platform.
-  - Tested the deployment on the testnet, confirming contract creation and interaction functionalities.
+        - Successfully deployed the `CrowdLeasingFactory` contract on the Rootstock testnet.
+        - This factory contract allows the creation of multiple `CrowdLeasingContract` instances dynamically, facilitating decentralized leasing operations on the platform.
+        - Tested the deployment on the testnet, confirming contract creation and interaction functionalities.
 
+
+### Contract Deployment and Interaction
+
+To deploy and interact with the smart contracts, follow these steps:
+
+1. **Setup Environment Variables:**
+   - You will need to set up your environment variables for contract deployment and interaction. Create a file named `.env.local` in the `contracts` directory with the following structure:
+     ```
+     PRIVATE_KEY=your_private_key
+     ROOTSTOCK_RPC_URL=your_rpc_url
+     FACTORY_CONTRACT_ADDRESS=your_factory_contract_address
+     ```
+   - Replace `your_private_key` with your Ethereum private key, `your_rpc_url` with your Rootstock RPC URL, and `your_factory_contract_address` with the deployed factory contract address.
+
+2. **Deploying Contracts:**
+   - Navigate to the `contracts` directory:
+     ```bash
+     cd ethonline24/contracts
+     ```
+   - Run the deployment script using Foundry:
+     ```bash
+     forge script script/FactoryDeploy.s.sol --rpc-url $ROOTSTOCK_RPC_URL --private-key $PRIVATE_KEY --broadcast
+     ```
+
+3. **Interacting with Contracts:**
+   - The ABI for the `CrowdLeasingFactory` contract is located in `frontend/abi/CrowdLeasingFactory.json`. Ensure this file is updated after any changes to the contract.
+   - Use the `contract.js` file in the `frontend/src` directory to set up and manage interactions with the contract using Web3 or Ethers.js.
 
 
 ### To Do
