@@ -52,6 +52,15 @@ Invernez aims to provide a decentralized platform for leasing assets. Here’s a
    - Integrated OpenZeppelin libraries for ERC20, ReentrancyGuard, and Ownable for security and standard compliance.
    - Added a new mapping (`investorsByLeaseId`) to improve the efficiency of token distribution by tracking unique investors for each leasing request.
     - Refined the investment and token distribution process to ensure accurate tracking and distribution, especially for investors who make multiple investments.
+   - Implemented `CrowdLeasingFactory` to dynamically deploy new instances of `CrowdLeasingContract` for different users. This factory contract ensures that each user can create a leasing contract with unique parameters, including the token name and symbol.
+   - Developed comprehensive tests for `CrowdLeasingFactory` to verify the correct deployment of new contracts and proper initialization with user-provided parameters.
+   - Integrated factory contract deployment script (`FactoryDeploy.s.sol`) to automate the deployment process.
+
+    - **Factory Deployment:**
+  - Successfully deployed the `CrowdLeasingFactory` contract on the Rootstock testnet.
+  - This factory contract allows the creation of multiple `CrowdLeasingContract` instances dynamically, facilitating decentralized leasing operations on the platform.
+  - Tested the deployment on the testnet, confirming contract creation and interaction functionalities.
+
 
 
 ### To Do
@@ -65,6 +74,13 @@ Here are the functionalities that are planned to be added to the Invernez platfo
 3. **Asset Liquidation**: Add functionality to handle asset liquidation in case the leasing payments are not met. This is important to protect investor funds.
    
 4. **Contract Renewal**: Provide an option for lessees to renew their lease at the end of the term, allowing for flexibility and extended asset use.
+
+5. **Refund Functionality for Unmet Funding Goals**: Implement a feature in the `CrowdLeasingContract` to automatically refund investors if the funding goal is not met within the specified period. This ensures that investor funds are protected in case a leasing request fails to attract enough investment.
+
+6. **Frontend Integration for Factory Contract**: Develop a user interface to interact with the deployed factory contract. This includes creating leasing requests and viewing existing ones on the platform.
+
+7. **Verification of Deployed Contracts**: Verify the deployed contracts on Rootstock to ensure transparency and ease of access for developers and users.
+
 
 
 

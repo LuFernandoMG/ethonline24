@@ -158,9 +158,19 @@ $ anvil
 
 ### Deploy
 
+## Deployment
+
+To deploy the smart contracts, ensure you have the correct environment setup and use the following steps:
+
+1. Deploy the `CrowdLeasingFactory` contract on the Rootstock testnet:
+
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+forge script script/FactoryDeploy.s.sol --rpc-url $ROOTSTOCK_RPC_URL --private-key $PRIVATE_KEY --broadcast 
 ```
+
+2. Verify the deployment on the Rootstock explorer to ensure the contract is correctly deployed and visible.
+
+3. Update the .env.local file with the deployed contract address for further interactions.
 
 ### Cast
 
@@ -197,6 +207,8 @@ The following features are planned for future updates to enhance the functionali
 4. **Lease Renewal Options**: Functions to support lease renewal, providing more options for users who wish to continue using the leased assets.
 
 5. **Investor Refund Functionality**: Plan to add a feature to the `CrowdLeasingContract` to automatically refund investors if the funding goal is not reached by the end of the funding period. This is crucial for protecting investor interests and ensuring funds are returned promptly in case of unsuccessful funding.
+
+6. **Add Contract Verification**: Verify deployed contracts on the Rootstock testnet to provide transparency and ensure correctness.
 
 
 
