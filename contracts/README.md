@@ -180,6 +180,9 @@ The smart contracts in this repository handle the core functionalities of the In
 
     **CrowdLeasingContract (CLC)**: The main contract that manages the creation of leasing requests, tokenization of assets, and the distribution of rental income.
 
+    - **CrowdLeasingFactory**: A factory contract designed to deploy new instances of `CrowdLeasingContract` based on user input. This allows for dynamic creation of leasing contracts with unique parameters such as token name and symbol, enhancing scalability and flexibility of the platform.
+
+
 
 ### To Do
 
@@ -192,6 +195,9 @@ The following features are planned for future updates to enhance the functionali
 3. **Asset Liquidation Process**: This will enable the platform to manage and liquidate assets if leasing payments are defaulted, protecting the investments of users.
    
 4. **Lease Renewal Options**: Functions to support lease renewal, providing more options for users who wish to continue using the leased assets.
+
+5. **Investor Refund Functionality**: Plan to add a feature to the `CrowdLeasingContract` to automatically refund investors if the funding goal is not reached by the end of the funding period. This is crucial for protecting investor interests and ensuring funds are returned promptly in case of unsuccessful funding.
+
 
 
 ## Deployment
