@@ -61,6 +61,12 @@ Invernez aims to provide a decentralized platform for leasing assets. Here’s a
         - This factory contract allows the creation of multiple `CrowdLeasingContract` instances dynamically, facilitating decentralized leasing operations on the platform.
         - Tested the deployment on the testnet, confirming contract creation and interaction functionalities.
 
+   2. **Frontend Integration:**
+   - Integrated Web3Auth for user authentication, allowing users to log in with their social accounts or email.
+   - Configured Web3Auth to connect with the Rootstock Testnet, enabling secure interactions with the blockchain.
+   - Developed functionalities to fetch user info, account details, balances, sign messages, and send transactions using Web3.js.
+
+
 
 ### Contract Deployment and Interaction
 

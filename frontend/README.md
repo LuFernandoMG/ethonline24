@@ -34,12 +34,42 @@ To interact with the smart contracts from the frontend, follow these steps:
      ```
    - Replace `your_rpc_url` with the Rootstock RPC URL and `your_factory_contract_address` with the deployed factory contract address.
 
+   ```markdown
+   - Update your `.env.local` file to include Web3Auth configuration:
+     ```
+     NEXT_PUBLIC_WEB3AUTH_CLIENT_ID=your_web3auth_client_id
+     ```
+   - Replace `your_web3auth_client_id` with your actual Web3Auth Client ID obtained from the Web3Auth dashboard.
+   - Ensure the RPC URL is set to the Rootstock Testnet public node.
+
 2. **Update Contract ABI:**
    - Ensure the ABI file `CrowdLeasingFactory.json` is placed in `frontend/abi`. This file is necessary for interacting with the contract using Web3 or Ethers.js.
 
 3. **Developing and Testing:**
    - Start the development server with `npm run dev` or `yarn dev`.
    - The frontend is set up to interact with the smart contracts using the configuration in `frontend/src/contract.js`.
+
+## Integrating Web3Auth with Rootstock
+
+To enable user authentication and connect to the Rootstock network using Web3Auth, follow these steps:
+
+1. **Install Web3Auth and Web3.js:**
+   Ensure you have the required packages installed by running:
+   ```bash
+   npm install @web3auth/modal @web3auth/ethereum-provider web3
+2. Configure Web3Auth:
+
+      Refer to the official Web3Auth documentation for Rootstock to set up Web3Auth in your application.
+      Make sure to initialize Web3Auth using your clientId from your environment variables and configure it to use the Rootstock Testnet as described in the documentation.
+
+3. Testing the Integration:
+
+Start the development server with npm run dev or yarn dev.
+Use the buttons provided in the UI to authenticate via Web3Auth, view account details, get balances, sign messages, and send transactions.
+Ensure that all functionalities work correctly on the Rootstock Testnet.
+
+Open frontend/src/page.tsx and set up Web3Auth with the following configuration:
+Ensure you initialize Web3Auth using clientId from your environment variables and configure it to use the Rootstock Testnet as follows:
 
 
 ## Learn More
