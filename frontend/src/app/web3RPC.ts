@@ -55,21 +55,38 @@ const sendTransaction = async (provider: IProvider): Promise<any> => {
     const web3 = new Web3(provider as any);
     const fromAddress = (await web3.eth.getAccounts())[0];
     const destination = fromAddress; // For demo purposes, sending to the same address
-    const amount = web3.utils.toWei("0.001", "ether");
-    let transaction = {
+    const amount = web3.utils.toWei("0.00005", "ether");
+
+    // Estimate gas for the transaction
+    const gas = await web3.eth.estimateGas({
       from: fromAddress,
       to: destination,
-      data: "0x",
       value: amount,
+    });
+
+    // Get the current gas price
+    const gasPrice = await web3.eth.getGasPrice();
+
+    // Prepare the transaction object using legacy gas price
+    const transaction = {
+      from: fromAddress,
+      to: destination,
+      value: amount,
+      gas,
+      gasPrice, // Explicitly specify gasPrice for Rootstock
     };
-    transaction = { ...transaction, gas: await web3.eth.estimateGas(transaction) } as any;
+
+    // Send the transaction
     const receipt = await web3.eth.sendTransaction(transaction);
     return JSON.stringify(receipt, (key, value) =>
       typeof value === 'bigint' ? value.toString() : value
     );
   } catch (error) {
+    console.error("Error sending transaction:", error);
     return error as string;
   }
 };
+
+
 
 export default { getChainId, getAccounts, getBalance, signMessage, sendTransaction };

@@ -1,6 +1,4 @@
 // src/page.tsx
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable no-console */
 
 "use client";
 
@@ -8,17 +6,17 @@ import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/modal";
 import { useEffect, useState } from "react";
-
-import RPC from "./web3RPC";
+import RPC from "./web3RPC"; // Use web3.js for blockchain interactions
 
 // Access environment variables using process.env
-const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID || ""; // Use your Web3Auth Client ID from .env.local
-const rpcUrl = process.env.NEXT_PUBLIC_ROOTSTOCK_RPC_URL || ""; // Use your Rootstock RPC URL from .env.local
+const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID || ""; // Web3Auth Client ID
+const rpcUrl = process.env.NEXT_PUBLIC_ROOTSTOCK_RPC_URL || ""; // Rootstock RPC URL
 
+// Configuration for Rootstock Testnet
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x1f", // Rootstock Testnet Chain ID
-  rpcTarget: rpcUrl, // Use environment variable for RPC URL
+  rpcTarget: rpcUrl, // Rootstock Testnet RPC URL
   displayName: "Rootstock Testnet",
   blockExplorerUrl: "https://explorer.testnet.rootstock.io/",
   ticker: "tRBTC",
@@ -26,13 +24,14 @@ const chainConfig = {
   logo: "https://pbs.twimg.com/profile_images/1592915327343624195/HPPSuVx3_400x400.jpg",
 };
 
+// Initialize Web3Auth with Ethereum private key provider
 const privateKeyProvider = new EthereumPrivateKeyProvider({
   config: { chainConfig },
 });
 
 const web3auth = new Web3Auth({
-  clientId, // Use environment variable for Client ID
-  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+  clientId, // Client ID from environment variable
+  web3AuthNetwork: WEB3AUTH_NETWORK.TESTNET, // Use TESTNET for development
   privateKeyProvider,
 });
 
@@ -50,70 +49,110 @@ function App() {
           setLoggedIn(true);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error initializing Web3Auth:", error);
       }
     };
 
     init();
   }, []);
 
+  // Function to handle user login
   const login = async () => {
-    const web3authProvider = await web3auth.connect();
-    setProvider(web3authProvider);
-    if (web3auth.connected) {
-      setLoggedIn(true);
+    try {
+      const web3authProvider = await web3auth.connect();
+      setProvider(web3authProvider);
+      if (web3auth.connected) {
+        setLoggedIn(true);
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
     }
   };
 
+  // Function to fetch user info
   const getUserInfo = async () => {
-    const user = await web3auth.getUserInfo();
-    uiConsole(user);
+    if (!web3auth) {
+      console.log("Web3Auth not initialized yet");
+      return;
+    }
+    try {
+      const user = await web3auth.getUserInfo();
+      uiConsole(user);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
   };
 
+  // Function to handle user logout
   const logout = async () => {
-    await web3auth.logout();
-    setProvider(null);
-    setLoggedIn(false);
-    uiConsole("logged out");
+    try {
+      await web3auth.logout();
+      setProvider(null);
+      setLoggedIn(false);
+      uiConsole("Logged out");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   };
 
+  // Function to get user's accounts
   const getAccounts = async () => {
     if (!provider) {
-      uiConsole("provider not initialized yet");
+      uiConsole("Provider not initialized yet");
       return;
     }
-    const address = await RPC.getAccounts(provider);
-    uiConsole(address);
+    try {
+      const address = await RPC.getAccounts(provider);
+      uiConsole(address);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
   };
 
+  // Function to get user's balance
   const getBalance = async () => {
     if (!provider) {
-      uiConsole("provider not initialized yet");
+      uiConsole("Provider not initialized yet");
       return;
     }
-    const balance = await RPC.getBalance(provider);
-    uiConsole(balance);
+    try {
+      const balance = await RPC.getBalance(provider);
+      uiConsole(balance);
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+    }
   };
 
+  // Function to sign a message
   const signMessage = async () => {
     if (!provider) {
-      uiConsole("provider not initialized yet");
+      uiConsole("Provider not initialized yet");
       return;
     }
-    const signedMessage = await RPC.signMessage(provider);
-    uiConsole(signedMessage);
+    try {
+      const signedMessage = await RPC.signMessage(provider);
+      uiConsole(signedMessage);
+    } catch (error) {
+      console.error("Error signing message:", error);
+    }
   };
 
+  // Function to send a transaction
   const sendTransaction = async () => {
     if (!provider) {
-      uiConsole("provider not initialized yet");
+      uiConsole("Provider not initialized yet");
       return;
     }
-    uiConsole("Sending Transaction...");
-    const transactionReceipt = await RPC.sendTransaction(provider);
-    uiConsole(transactionReceipt);
+    uiConsole("Sending transaction...");
+    try {
+      const transactionReceipt = await RPC.sendTransaction(provider);
+      uiConsole(transactionReceipt);
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+    }
   };
 
+  // Utility function to display output in console
   function uiConsole(...args: any[]): void {
     const el = document.querySelector("#console>p");
     if (el) {
@@ -122,6 +161,7 @@ function App() {
     }
   }
 
+  // Render view for logged-in users
   const loggedInView = (
     <>
       <div className="flex-container">
@@ -159,6 +199,7 @@ function App() {
     </>
   );
 
+  // Render view for users not logged in
   const unloggedInView = (
     <button onClick={login} className="card">
       Login
@@ -168,29 +209,12 @@ function App() {
   return (
     <div className="container">
       <h1 className="title">
-        <a target="_blank" href="https://web3auth.io/docs/sdk/pnp/web/modal" rel="noreferrer">
-          Web3Auth{" "}
-        </a>
-        & NextJS Quick Start
+        Web3Auth & NextJS Quick Start
       </h1>
-
       <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
       <div id="console" style={{ whiteSpace: "pre-line" }}>
         <p style={{ whiteSpace: "pre-line" }}></p>
       </div>
-
-      <footer className="footer">
-        <a
-          href="https://github.com/Web3Auth/web3auth-pnp-examples/tree/main/web-modal-sdk/quick-starts/nextjs-modal-quick-start"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Source code
-        </a>
-        <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FWeb3Auth%2Fweb3auth-pnp-examples%2Ftree%2Fmain%2Fweb-modal-sdk%2Fquick-starts%2Fnextjs-modal-quick-start&project-name=w3a-nextjs-modal&repository-name=w3a-nextjs-modal">
-          <img src="https://vercel.com/button" alt="Deploy with Vercel" />
-        </a>
-      </footer>
     </div>
   );
 }
