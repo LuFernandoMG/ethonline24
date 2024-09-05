@@ -1,11 +1,12 @@
-// src/page.tsx
-
 "use client";
-
+import React, { useEffect, useState } from "react";
+import styles from "./page.module.scss";
+import Image from "next/image";
+import { useKeenSlider } from "keen-slider/react";
+import "keen-slider/keen-slider.min.css";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/modal";
-import { useEffect, useState } from "react";
 import RPC from "./web3RPC"; // Use web3.js for blockchain interactions
 
 // Access environment variables using process.env
@@ -37,7 +38,19 @@ const web3auth = new Web3Auth({
 
 function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
+  const [userType, setUserType] = useState<"borrower" | "investor">("investor");
   const [loggedIn, setLoggedIn] = useState(false);
+  const [currentSlide, setCurrentSlide] = React.useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
+    initial: 0,
+    slideChanged(slider) {
+      setCurrentSlide(slider.track.details.rel);
+    },
+    created() {
+      setLoaded(true);
+    },
+  });
 
   useEffect(() => {
     const init = async () => {
@@ -55,6 +68,31 @@ function App() {
 
     init();
   }, []);
+
+  function Arrow(props: {
+    disabled: boolean;
+    left?: boolean;
+    onClick: (e: any) => void;
+  }) {
+    const disabled = props.disabled ? " arrow--disabled" : "";
+    return (
+      <svg
+        onClick={props.onClick}
+        className={`arrow ${
+          props.left ? "arrow--left" : "arrow--right"
+        } ${disabled}`}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+      >
+        {props.left && (
+          <path d="M16.67 0l2.83 2.829-9.339 9.175 9.339 9.167-2.83 2.829-12.17-11.996z" />
+        )}
+        {!props.left && (
+          <path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z" />
+        )}
+      </svg>
+    );
+  }
 
   // Function to handle user login
   const login = async () => {
@@ -152,18 +190,13 @@ function App() {
     }
   };
 
-  // Utility function to display output in console
-  function uiConsole(...args: any[]): void {
-    const el = document.querySelector("#console>p");
-    if (el) {
-      el.innerHTML = JSON.stringify(args || {}, null, 2);
-      console.log(...args);
-    }
-  }
+  const handleTypeUser = (event: any) => {
+    setUserType(event.target.value);
+  };
 
   // Render view for logged-in users
   const loggedInView = (
-    <>
+    <div className="">
       <div className="flex-container">
         <div>
           <button onClick={getUserInfo} className="card">
@@ -196,7 +229,7 @@ function App() {
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 
   // Render view for users not logged in
@@ -207,17 +240,100 @@ function App() {
   );
 
   return (
-    <div className="container">
-      <h1 className="title">
-        Web3Auth & NextJS Quick Start
-      </h1>
-      <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
-      <div id="console" style={{ whiteSpace: "pre-line" }}>
-        <p style={{ whiteSpace: "pre-line" }}></p>
+    <div className={styles.container}>
+      <Image
+        src="/assets/landing-image.jpg"
+        alt="Web3Auth Logo"
+        width={200}
+        height={200}
+        className={styles.left_panel}
+      />
+      <div className={styles.right_panel}>
+        <button className={styles.login_button} onClick={login}>
+          Login
+        </button>
+
+        <h1>Crowdly</h1>
+
+        <h3>How does it work?</h3>
+
+        <div className={styles.switch}>
+          <label className={(userType === "investor" && styles.active) || ""}>
+            <input
+              id="userType"
+              type="radio"
+              onChange={handleTypeUser}
+              name="userType"
+              value="investor"
+            />
+            Investor
+          </label>
+          <label className={(userType === "borrower" && styles.active) || ""}>
+            <input
+              id="userType"
+              type="radio"
+              onChange={handleTypeUser}
+              name="userType"
+              value="borrower"
+            />
+            Borrower
+          </label>
+        </div>
+
+        <>
+          <div className={styles.navigationWrapper}>
+            <div ref={sliderRef} className="keen-slider">
+              <div className="keen-slider__slide">
+                <h3>{userType === "investor" ? "💵" : "📝"}</h3>
+                <p>
+                  {userType === "investor"
+                    ? "Invest on projects"
+                    : "Propose your projects"}
+                </p>
+              </div>
+              <div className="keen-slider__slide">
+                <h3>{userType === "investor" ? "📜" : "💸"}</h3>
+                <p>
+                  {userType === "investor"
+                    ? "Get tokens as owner of the assets acquired"
+                    : "Fund your project"}
+                </p>
+              </div>
+              <div className="keen-slider__slide">
+                <h3>{userType === "investor" ? "💰" : "🚛"}</h3>
+                <p>
+                  {userType === "investor"
+                    ? "Get passive income by borrow over your physical assets"
+                    : "Pay as you use with complete autonomy"}
+                </p>
+              </div>
+            </div>
+          </div>
+          {loaded && instanceRef.current && (
+            <div className={styles.dots}>
+              {Array.from(
+                Array(instanceRef.current.track.details.slides.length).keys()
+              ).map((idx) => {
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      instanceRef.current?.moveToIdx(idx);
+                    }}
+                    className={currentSlide === idx ? styles.dotActive : styles.dot}
+                  ></button>
+                );
+              })}
+            </div>
+          )}
+        </>
+
+        <button className={styles.button} onClick={login}>
+          Start your journey!
+        </button>
       </div>
     </div>
   );
 }
 
 export default App;
-

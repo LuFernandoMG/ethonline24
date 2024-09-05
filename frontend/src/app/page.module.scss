@@ -1,0 +1,170 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: #f6ebe6;
+}
+
+.left_panel {
+  width: auto;
+  height: 100vh;
+  object-fit: cover;
+  position: relative;
+  left: 0;
+}
+
+.right_panel {
+  padding: 2rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  color: #010101;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+  }
+}
+
+.login_button {
+  background-color: #010101;
+  border-radius: 10px;
+  border: 1px solid #010101ad;
+  padding: 0.5rem 1rem;
+  color: #f6ebe6;
+  font-size: 1rem;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login_button:hover {
+  transition: all 0.3s ease;
+  background-color: #010101ad;
+}
+
+.switch {
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 1rem 0;
+  gap: 2rem;
+
+  input {
+    display: none;
+  }
+
+  label {
+    cursor: pointer;
+    font-size: 1rem;
+    color: #010101;
+    transition: all 0.3s ease;
+    font-weight: 600;
+  }
+
+  label.active {
+    background-color: #f6ebe6;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+  }
+}
+
+
+.navigationWrapper {
+  position: relative;
+  max-width: 365px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.dots {
+  display: flex;
+  padding: 10px 0;
+  justify-content: center;
+}
+
+.dot {
+  border: none;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  margin: 0 5px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.dot:focus {
+  outline: none;
+}
+
+.dotActive {
+  border: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 0 5px;
+  padding: 5px;
+  cursor: pointer;
+  background: #010101;
+}
+
+.arrow {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  fill: #fff;
+  cursor: pointer;
+}
+
+.arrow--left {
+  left: 5px;
+}
+
+.arrow--right {
+  left: auto;
+  right: 5px;
+}
+
+.arrow--disabled {
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+.button {
+  background-color: #010101;
+  border-radius: 10px;
+  border: 1px solid #010101ad;
+  padding: 0.5rem 1rem;
+  color: #f6ebe6;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 2rem;
+}
+
+.button:hover {
+  transition: all 0.3s ease;
+  background-color: #010101ad;
+}
