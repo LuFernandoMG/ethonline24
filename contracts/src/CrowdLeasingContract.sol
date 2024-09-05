@@ -88,6 +88,10 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
     // Event emitted when tokens have been distributed
     event TokensDistributed(uint256 leaseId);
 
+    // Event emitted when the state of a leasing request changes
+    event LeasingRequestStateChanged(uint256 leaseId, State newState);
+    
+
     // Modified Constructor to accept token name and symbol
     /**
      * @dev Constructor that initializes the leaseIdCounter and sets the ERC20 token name and symbol.
@@ -147,6 +151,9 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
 
         // Emit an event to notify that a new leasing request has been created
         emit LeasingRequestCreated(newLeaseId, msg.sender, _amount, _duration, fundingDeadline, _tokenPrice);
+
+        // Emit the state change event
+        emit LeasingRequestStateChanged(newLeaseId, State.Active);
     }
 
     /**
@@ -188,6 +195,9 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
             request.status = State.Funded; // Update status to Funded
             request.fulfilled = true; // Mark the request as fulfilled
             mintTokens(_leaseId); // Automatically mint tokens when funding is complete
+
+            // Emit the state change event
+            emit LeasingRequestStateChanged(_leaseId, State.Funded);
         }
 
         // Emit an event to notify that a leasing request has been funded
