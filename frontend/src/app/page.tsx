@@ -6,7 +6,7 @@ import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/modal";
 import RPC from "./web3RPC"; 
-import { createLeasingContract } from './contract';
+import { createLeasingContract, getActiveLeasingContracts, fundLeasingContract } from './contract';
 
 // Access environment variables
 const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID || ""; 
@@ -132,12 +132,45 @@ function App() {
   // Investor views active leasing requests
   const handleViewActiveLeases = async () => {
     try {
-        const leases = await getActiveLeasingContracts(provider); 
+        const leases = await getActiveLeasingContracts(provider);
         setActiveLeasingRequests(leases); 
     } catch (error) {
         console.error("Error listing active leasing requests:", error);
     }
   };
+
+  
+  const handleFundContract = async (contractAddress) => {
+    try {
+        if (provider && investmentAmount) {
+            // Obtener las cuentas a través de Web3Auth provider
+            const accounts = await provider.request({ method: "eth_accounts" });
+            
+            if (!accounts || accounts.length === 0) {
+                alert("No Ethereum address found. Please ensure your wallet is connected.");
+                return;
+            }
+
+            const fromAddress = accounts[0]; // Obtener la cuenta del usuario autenticado
+
+            // Convierte investmentAmount a número
+            const formattedInvestmentAmount = parseFloat(investmentAmount);
+            if (isNaN(formattedInvestmentAmount) || formattedInvestmentAmount <= 0) {
+                alert("Please enter a valid investment amount.");
+                return;
+            }
+
+            // Llama a la función fundLeasingContract con el monto de inversión convertido
+            await fundLeasingContract(contractAddress, fromAddress, formattedInvestmentAmount.toString(), provider);
+            alert("Investment successful!");
+        } else {
+            alert("Please enter an amount to invest.");
+        }
+    } catch (error) {
+        console.error("Error funding contract:", error);
+    }
+  };
+
 
 
   const handleTypeUser = (event: any) => {
@@ -168,18 +201,30 @@ function App() {
       {activeLeasingRequests.length > 0 ? (
         <ul>
           {activeLeasingRequests.map((contractAddress, idx) => (
-              <li key={idx}>
-                  Contract Address: {contractAddress} 
-                  <button onClick={() => handleFundContract(contractAddress)}>Fund</button>
-              </li>
+            <li key={idx}>
+              <p>Contract Address: {contractAddress}</p>
+
+              {/* Input for investment amount */}
+              <input 
+                type="number" 
+                placeholder="Enter investment amount" 
+                value={investmentAmount} 
+                onChange={e => setInvestmentAmount(e.target.value)} 
+              />
+
+              {/* Button to fund contract */}
+              <button onClick={() => handleFundContract(contractAddress)}>
+                Fund
+              </button>
+            </li>
           ))}
         </ul>
       ) : (
         <p>No active leasing requests available</p>
       )}
-
     </div>
   );
+
 
   // Profile section to display wallet and balance
   const profileView = (
