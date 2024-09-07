@@ -4,6 +4,9 @@ import Web3 from 'web3';
 import leasingFactoryABI from './abi/CrowdLeasingFactory.json';
 import leasingContractABI from './abi/CrowdLeasingContract.json';
 
+// Set max listeners to prevent MaxListenersExceededWarning
+require('events').EventEmitter.defaultMaxListeners = 20;
+
 // Note: The provider is now expected to be passed from the calling function (e.g., from page.tsx)
 
 // Contract addresses, using toChecksumAddress to ensure address format correctness
@@ -23,6 +26,7 @@ const createLeasingContract = async (fromAddress, tokenName, tokenSymbol, provid
         const gasPrice = await web3.eth.getGasPrice();
         const gasLimit = 3000000;
 
+        // Debug logs for received inputs
         console.log("Amount received:", amount);
         console.log("Duration received:", duration);
         console.log("Funding period received:", fundingPeriod);
@@ -50,6 +54,7 @@ const createLeasingContract = async (fromAddress, tokenName, tokenSymbol, provid
         const receipt = await web3.eth.sendTransaction(tx);
         console.log('Leasing contract creation transaction receipt:', receipt);
 
+        // Extract the new contract address from the event logs
         const eventSignature = web3.utils.sha3("NewLeasingContract(address,address)");
         let newContractAddress = null;
         receipt.logs.forEach((log) => {
@@ -78,6 +83,7 @@ const createLeasingContract = async (fromAddress, tokenName, tokenSymbol, provid
             throw new Error('NewLeasingContract event not found in the receipt');
         }
 
+        // Calling the createLeasingRequest method to initialize the request for the new contract
         console.log('Calling createLeasingRequest with:', {
             newContractAddress,
             amountInWei,
@@ -97,15 +103,15 @@ const createLeasingContract = async (fromAddress, tokenName, tokenSymbol, provid
     }
 };
 
-
+// Function to create a leasing request after the contract is created
 const createLeasingRequest = async (contractInstance, fromAddress, amount, duration, fundingPeriod, tokenPrice, provider) => {
     try {
         const web3 = new Web3(provider);
-        const amountInWei = web3.utils.toWei(amount, 'ether');
         const gasPrice = await web3.eth.getGasPrice();
         const gasLimit = 3000000;
 
-        const createLeasingRequestTx = contractInstance.methods.createLeasingRequest(amountInWei, duration, fundingPeriod, tokenPrice);
+        // Prepare the transaction for creating the leasing request
+        const createLeasingRequestTx = contractInstance.methods.createLeasingRequest(amount, duration, fundingPeriod, tokenPrice);
         const txData = createLeasingRequestTx.encodeABI();
 
         const tx = {
@@ -125,13 +131,13 @@ const createLeasingRequest = async (contractInstance, fromAddress, amount, durat
     }
 };
 
-// Function to get active leasing contract
+// Function to get active leasing contracts
 const getActiveLeasingContracts = async (provider) => {
     try {
         console.log("Starting to retrieve active leasing contracts...");
         const web3 = new Web3(provider);
         console.log("Web3 instance created successfully with provider:", provider);
-        
+
         const leasingFactory = createLeasingFactoryInstance(provider);
         console.log("Leasing factory instance created:", leasingFactory);
 
@@ -140,25 +146,39 @@ const getActiveLeasingContracts = async (provider) => {
 
         const activeLeases = [];
 
+        // Loop through each contract created by the factory
         for (let i = 0; i < totalContracts; i++) {
             console.log(`Retrieving contract at index ${i}...`);
             const contractAddress = await leasingFactory.methods.getContractByIndex(i).call();
             console.log(`Contract address at index ${i}:`, contractAddress);
 
+            // Crear una instancia del contrato para verificar su estado
             const leasingContract = new web3.eth.Contract(leasingContractABI, contractAddress);
             console.log(`Leasing contract instance created for address ${contractAddress}:`, leasingContract);
 
-            const leaseId = i; // Use `i` as the leaseId
+            // Obtener el leaseId adecuado, en este caso asumimos que comienza en 1
+            const leaseId = 1; // Ajustado para reflejar que la primera solicitud tiene leaseId = 1
             console.log(`Retrieving status for leaseId ${leaseId} in contract ${contractAddress}...`);
 
             const status = await leasingContract.methods.getStatus(leaseId).call();
-            const statusAsNumber = Number(status); // Ensure it's treated as a number
+            const statusAsNumber = Number(status); // Convertir el estado a número
             console.log(`Status for leaseId ${leaseId} in contract ${contractAddress}:`, statusAsNumber);
 
-            // Check if status is Active (1)
+            // Verificar si el estado es Active (1)
             if (statusAsNumber === 1) {
                 console.log(`Contract ${contractAddress} with leaseId ${leaseId} is active, adding to list...`);
-                activeLeases.push(contractAddress);
+
+                // Obtener el remaining amount para el contrato activo
+                const remainingAmountInWei = await leasingContract.methods.getRemainingAmount(leaseId).call();
+                console.log(`Remaining amount in wei for contract ${contractAddress}: ${remainingAmountInWei}`);
+                const remainingAmountInEther = web3.utils.fromWei(remainingAmountInWei, 'ether');
+                console.log(`Remaining amount for contract ${contractAddress}: ${remainingAmountInEther} ETH`);
+
+                // Añadir el contrato activo a la lista
+                activeLeases.push({
+                    contractAddress,
+                    remainingAmount: remainingAmountInEther // Convertido correctamente a ether
+                });
             } else {
                 console.log(`Contract ${contractAddress} with leaseId ${leaseId} is not active, skipping...`);
             }
@@ -173,23 +193,13 @@ const getActiveLeasingContracts = async (provider) => {
 };
 
 
-
-
-
-
-
-//Function to funding leasing request
-
+// Function to fund a leasing contract
 const fundLeasingContract = async (contractAddress, fromAddress, investmentAmount, provider) => {
     try {
         console.log(`Starting to fund leasing contract at address: ${contractAddress}`);
         console.log(`From address: ${fromAddress}`);
         console.log(`Investment amount: `, investmentAmount);
         console.log(`Type of investmentAmount: `, typeof investmentAmount);
-
-        if (typeof investmentAmount !== 'number' && typeof investmentAmount !== 'string') {
-            throw new Error(`Invalid investmentAmount type: ${typeof investmentAmount}. It should be a number or string.`);
-        }
 
         const web3 = new Web3(provider);
         console.log("Web3 instance created successfully with the provided provider");
@@ -201,6 +211,7 @@ const fundLeasingContract = async (contractAddress, fromAddress, investmentAmoun
         const balance = await web3.eth.getBalance(fromAddress);
         console.log(`Balance of fromAddress: ${balance} wei`);
 
+        // Ensure the balance is sufficient
         if (parseFloat(balance) < parseFloat(web3.utils.toWei(investmentAmount.toString(), 'ether'))) {
             throw new Error("Insufficient balance to fund the contract.");
         }
@@ -240,15 +251,11 @@ const fundLeasingContract = async (contractAddress, fromAddress, investmentAmoun
 };
 
 
-
-
-
-
 // Export only necessary functions
 export {
     createLeasingFactoryInstance,
     createLeasingContract,
     createLeasingRequest,
     getActiveLeasingContracts,
-    fundLeasingContract
+    fundLeasingContract,
 };

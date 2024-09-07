@@ -37,7 +37,7 @@ function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [userType, setUserType] = useState<"borrower" | "investor">("investor");
   const [loggedIn, setLoggedIn] = useState(false);
-  const [activeLeasingRequests, setActiveLeasingRequests] = useState<string[]>([]);
+  const [activeLeasingRequests, setActiveLeasingRequests] = useState<{ contractAddress: string, remainingAmount: string }[]>([]);
   const [tokenName, setTokenName] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("");
   const [amount, setAmount] = useState("");
@@ -97,47 +97,53 @@ function App() {
   };
 
   // Borrower creates a new leasing contract
-  const handleCreateLeasingContract = async () => {
-    try {
-        if (provider) {
-            // Check if all the required values are present
-            if (!tokenName || !tokenSymbol || !amount || !duration || !fundingPeriod || !tokenPrice) {
-                alert("Please fill in all the fields."); // Alert user if any field is missing
-                return; // Stop execution if any field is missing
-            }
+const handleCreateLeasingContract = async () => {
+  try {
+      if (provider) {
+          // Check if all the required values are present
+          if (!tokenName || !tokenSymbol || !amount || !duration || !fundingPeriod || !tokenPrice) {
+              alert("Please fill in all the fields."); // Alert user if any field is missing
+              return; // Stop execution if any field is missing
+          }
 
-            const accounts = await RPC.getAccounts(provider); // Fetch the user's account from the provider
-            
-            // Call createLeasingContract function and pass all the necessary parameters
-            await createLeasingContract(
-                accounts[0],       // The user's address (from the fetched accounts)
-                tokenName,         // Name of the token
-                tokenSymbol,       // Symbol of the token
-                provider,          // The provider object (from Web3Auth)
-                amount,            // Amount in ether (from the form input)
-                duration,          // Duration of the leasing contract (from the form input)
-                fundingPeriod,     // Funding period for the leasing contract (from the form input)
-                tokenPrice         // Price of the token (from the form input)
-            );
-            
-            alert('Leasing contract and request created successfully'); // Alert success message
-        }
-    } catch (error) {
-        console.error("Error creating leasing contract:", error); // Log any error that occurs
-    }
-  };
+          const accounts = await RPC.getAccounts(provider); // Fetch the user's account from the provider
+
+          // Convert days to seconds for duration and funding period
+          const durationInSeconds = parseInt(duration) * 86400; // Convert duration to seconds
+          const fundingPeriodInSeconds = parseInt(fundingPeriod) * 86400; // Convert funding period to seconds
+          
+          // Call createLeasingContract function and pass all the necessary parameters
+          await createLeasingContract(
+              accounts[0],               // The user's address (from the fetched accounts)
+              tokenName,                 // Name of the token
+              tokenSymbol,               // Symbol of the token
+              provider,                  // The provider object (from Web3Auth)
+              amount,                    // Amount in ether (from the form input)
+              durationInSeconds,         // Duration of the leasing contract in seconds
+              fundingPeriodInSeconds,    // Funding period for the leasing contract in seconds
+              tokenPrice                 // Price of the token (from the form input)
+          );
+          
+          alert('Leasing contract and request created successfully'); // Alert success message
+      }
+  } catch (error) {
+      console.error("Error creating leasing contract:", error); // Log any error that occurs
+  }
+};
 
 
 
   // Investor views active leasing requests
   const handleViewActiveLeases = async () => {
     try {
-        const leases = await getActiveLeasingContracts(provider);
-        setActiveLeasingRequests(leases); 
+        const leases = await getActiveLeasingContracts(provider); 
+        setActiveLeasingRequests(leases);
     } catch (error) {
         console.error("Error listing active leasing requests:", error);
     }
   };
+
+
 
   
   const handleFundContract = async (contractAddress) => {
@@ -194,36 +200,40 @@ function App() {
   );
 
   // Render for investor (list of active leases)
-  const investorView = (
-    <div className={styles.investor}>
-      <button onClick={handleViewActiveLeases} className={styles.refreshButton}>Refresh List</button>
-      <h3>Active Leasing Requests</h3>
-      {activeLeasingRequests.length > 0 ? (
-        <ul>
-          {activeLeasingRequests.map((contractAddress, idx) => (
-            <li key={idx}>
-              <p>Contract Address: {contractAddress}</p>
+  // Render for investor (list of active leases)
+const investorView = (
+  <div className={styles.investor}>
+    <button onClick={handleViewActiveLeases} className={styles.refreshButton}>
+      Refresh List
+    </button>
+    <h3>Active Leasing Requests</h3>
+    {activeLeasingRequests.length > 0 ? (
+      <ul>
+        {activeLeasingRequests.map((lease, idx) => (
+          <li key={idx}>
+            <p>Contract Address: {lease.contractAddress}</p>
+            <p>Remaining Amount: {lease.remainingAmount} ethers</p>
 
-              {/* Input for investment amount */}
-              <input 
-                type="number" 
-                placeholder="Enter investment amount" 
-                value={investmentAmount} 
-                onChange={e => setInvestmentAmount(e.target.value)} 
-              />
+            {/* Input for investment amount */}
+            <input
+              type="number"
+              placeholder="Enter investment amount"
+              value={investmentAmount}
+              onChange={(e) => setInvestmentAmount(e.target.value)}
+            />
 
-              {/* Button to fund contract */}
-              <button onClick={() => handleFundContract(contractAddress)}>
-                Fund
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No active leasing requests available</p>
-      )}
-    </div>
-  );
+            {/* Button to fund contract */}
+            <button onClick={() => handleFundContract(lease.contractAddress)}>
+              Fund
+            </button>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>No active leasing requests available</p>
+    )}
+  </div>
+);
 
 
   // Profile section to display wallet and balance
