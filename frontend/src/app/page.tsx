@@ -6,7 +6,7 @@ import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/modal";
 import RPC from "./web3RPC"; 
-import { createLeasingContract, listActiveLeasingRequests } from './contract';
+import { createLeasingContract } from './contract';
 
 // Access environment variables
 const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID || ""; 
@@ -37,7 +37,7 @@ function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [userType, setUserType] = useState<"borrower" | "investor">("investor");
   const [loggedIn, setLoggedIn] = useState(false);
-  const [activeLeasingRequests, setActiveLeasingRequests] = useState([]);
+  const [activeLeasingRequests, setActiveLeasingRequests] = useState<string[]>([]);
   const [tokenName, setTokenName] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("");
   const [amount, setAmount] = useState("");
@@ -132,12 +132,13 @@ function App() {
   // Investor views active leasing requests
   const handleViewActiveLeases = async () => {
     try {
-      const leases = await listActiveLeasingRequests();
-      setActiveLeasingRequests(leases);
+        const leases = await getActiveLeasingContracts(provider); 
+        setActiveLeasingRequests(leases); 
     } catch (error) {
-      console.error("Error listing active leasing requests:", error);
+        console.error("Error listing active leasing requests:", error);
     }
   };
+
 
   const handleTypeUser = (event: any) => {
     setUserType(event.target.value);
@@ -166,13 +167,17 @@ function App() {
       <h3>Active Leasing Requests</h3>
       {activeLeasingRequests.length > 0 ? (
         <ul>
-          {activeLeasingRequests.map((lease, idx) => (
-            <li key={idx}>Lease ID: {lease.id}, Amount Remaining: {lease.remainingAmount}</li>
+          {activeLeasingRequests.map((contractAddress, idx) => (
+              <li key={idx}>
+                  Contract Address: {contractAddress} 
+                  <button onClick={() => handleFundContract(contractAddress)}>Fund</button>
+              </li>
           ))}
         </ul>
       ) : (
         <p>No active leasing requests available</p>
       )}
+
     </div>
   );
 

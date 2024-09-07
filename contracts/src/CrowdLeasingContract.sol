@@ -168,6 +168,17 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
     }
 
     /**
+     * @dev Returns the current status of a leasing request.
+     * @param _leaseId The ID of the leasing request.
+     * @return The current state of the leasing request.
+     */
+    function getStatus(uint256 _leaseId) external view returns (State) {
+        LeasingRequest storage request = leasingRequests[_leaseId];
+        return request.status;
+    }
+
+
+    /**
      * @dev Allows users to invest in an active leasing request by sending Ether.
      * Ensures that the leasing request is active, not expired, and that the investment does not exceed the required amount.
      * This function also handles the allocation of tokens to the investor based on the amount of Ether invested.
