@@ -196,29 +196,36 @@ const getActiveLeasingContracts = async (provider) => {
 // Function to fund a leasing contract
 const fundLeasingContract = async (contractAddress, fromAddress, investmentAmount, provider) => {
     try {
+        console.log("=========== FUND LEASING CONTRACT INITIATED ===========");
         console.log(`Starting to fund leasing contract at address: ${contractAddress}`);
         console.log(`From address: ${fromAddress}`);
         console.log(`Investment amount: `, investmentAmount);
-        console.log(`Type of investmentAmount: `, typeof investmentAmount);
+        console.log(`Investment amount (type): `, typeof investmentAmount);
 
         const web3 = new Web3(provider);
         console.log("Web3 instance created successfully with the provided provider");
 
-        const leasingContract = new web3.eth.Contract(leasingContractABI, contractAddress);
+        const leasingContract = new web3.eth.Contract(leasingContractABI, web3.utils.toChecksumAddress(contractAddress));
         console.log(`Leasing contract instance created for address: ${contractAddress}`);
 
         // Check balance before proceeding
-        const balance = await web3.eth.getBalance(fromAddress);
+        const balance = await web3.eth.getBalance(web3.utils.toChecksumAddress(fromAddress));
         console.log(`Balance of fromAddress: ${balance} wei`);
+        console.log(`Balance of fromAddress in ether: ${web3.utils.fromWei(balance, 'ether')} ETH`);
 
         // Ensure the balance is sufficient
-        if (parseFloat(balance) < parseFloat(web3.utils.toWei(investmentAmount.toString(), 'ether'))) {
+        const requiredBalanceInWei = web3.utils.toWei(investmentAmount.toString(), 'ether');
+        console.log(`Investment amount converted to wei: ${requiredBalanceInWei}`);
+
+        if (parseFloat(balance) < parseFloat(requiredBalanceInWei)) {
+            console.error("Insufficient balance detected.");
             throw new Error("Insufficient balance to fund the contract.");
         }
 
         // Get gas price and log it
-        const gasPrice = await web3.eth.getGasPrice();
+        const gasPrice = parseInt(await web3.eth.getGasPrice());
         console.log(`Gas price retrieved: ${gasPrice}`);
+        console.log(`Gas price in gwei: ${web3.utils.fromWei(gasPrice.toString(), 'gwei')} gwei`);
 
         // Set gas limit and log it
         const gasLimit = 3000000;
@@ -230,22 +237,28 @@ const fundLeasingContract = async (contractAddress, fromAddress, investmentAmoun
 
         // Prepare transaction and log it
         const tx = {
-            from: fromAddress,
-            to: contractAddress,
-            value: investmentAmountInWei,
+            from: web3.utils.toChecksumAddress(fromAddress),
+            to: web3.utils.toChecksumAddress(contractAddress),
+            value: investmentAmountInWei.toString(),  // Ensure it's sent as a string
             gas: gasLimit,
             gasPrice: gasPrice,
         };
-        console.log("Prepared transaction object: ", tx);
+        console.log("Prepared transaction object: ", JSON.stringify(tx, null, 2));
 
+        // Estimate gas and log it
+        const gasEstimate = await web3.eth.estimateGas(tx);
+        console.log(`Estimated Gas: ${gasEstimate}`);
+
+        console.log("Sending transaction...");
         // Send transaction and log the receipt
         const receipt = await web3.eth.sendTransaction(tx);
         console.log('Investment transaction receipt:', receipt);
 
-        // Return the transaction receipt
+        console.log("=========== FUND LEASING CONTRACT SUCCESSFULLY COMPLETED ===========");
         return receipt;
     } catch (error) {
-        console.error("Error funding leasing contract:", error);
+        console.error("Error funding leasing contract:", error.message);
+        console.error("Full error object:", error);
         throw error;
     }
 };

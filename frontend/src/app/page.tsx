@@ -44,7 +44,7 @@ function App() {
   const [duration, setDuration] = useState("");
   const [fundingPeriod, setFundingPeriod] = useState("");
   const [tokenPrice, setTokenPrice] = useState("");
-  const [investmentAmount, setInvestmentAmount] = useState("");
+  const [investmentAmounts, setInvestmentAmounts] = useState({});
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
 
@@ -144,39 +144,45 @@ const handleCreateLeasingContract = async () => {
   };
 
 
-
-  
   const handleFundContract = async (contractAddress) => {
     try {
-        if (provider && investmentAmount) {
-            // Obtener las cuentas a través de Web3Auth provider
-            const accounts = await provider.request({ method: "eth_accounts" });
-            
-            if (!accounts || accounts.length === 0) {
-                alert("No Ethereum address found. Please ensure your wallet is connected.");
-                return;
-            }
-
-            const fromAddress = accounts[0]; // Obtener la cuenta del usuario autenticado
-
-            // Convierte investmentAmount a número
-            const formattedInvestmentAmount = parseFloat(investmentAmount);
-            if (isNaN(formattedInvestmentAmount) || formattedInvestmentAmount <= 0) {
-                alert("Please enter a valid investment amount.");
-                return;
-            }
-
-            // Llama a la función fundLeasingContract con el monto de inversión convertido
-            await fundLeasingContract(contractAddress, fromAddress, formattedInvestmentAmount.toString(), provider);
-            alert("Investment successful!");
-        } else {
-            alert("Please enter an amount to invest.");
+      if (provider && investmentAmounts[contractAddress]) {
+        // Obtener las cuentas a través de Web3Auth provider
+        const accounts = await provider.request({ method: "eth_accounts" });
+        
+        if (!accounts || accounts.length === 0) {
+          alert("No Ethereum address found. Please ensure your wallet is connected.");
+          return;
         }
+  
+        const fromAddress = accounts[0]; // Obtener la cuenta del usuario autenticado
+        
+        // Convierte investmentAmount a número y luego a string para asegurar la conversión
+        const formattedInvestmentAmount = parseFloat(investmentAmounts[contractAddress]);
+        if (isNaN(formattedInvestmentAmount) || formattedInvestmentAmount <= 0) {
+          alert("Please enter a valid investment amount.");
+          return;
+        }
+  
+        // Llama a la función fundLeasingContract con el monto de inversión
+        await fundLeasingContract(contractAddress, fromAddress, formattedInvestmentAmount.toString(), provider);
+        alert("Investment successful!");
+      } else {
+        alert("Please enter an amount to invest.");
+      }
     } catch (error) {
-        console.error("Error funding contract:", error);
+      console.error("Error funding contract:", error);
     }
   };
-
+  
+  const handleInvestmentAmountChange = (e, contractAddress) => {
+    const value = e.target.value;
+    setInvestmentAmounts((prevAmounts) => ({
+      ...prevAmounts,
+      [contractAddress]: value,
+    }));
+  };
+  
 
 
   const handleTypeUser = (event: any) => {
@@ -215,17 +221,17 @@ const investorView = (
             <p>Remaining Amount: {lease.remainingAmount} ethers</p>
 
             {/* Input for investment amount */}
-            <input
-              type="number"
-              placeholder="Enter investment amount"
-              value={investmentAmount}
-              onChange={(e) => setInvestmentAmount(e.target.value)}
-            />
+              <input
+                type="number"
+                placeholder="Enter investment amount"
+                value={investmentAmounts[lease.contractAddress] || ""}
+                onChange={(e) => handleInvestmentAmountChange(e, lease.contractAddress)}
+              />
 
-            {/* Button to fund contract */}
-            <button onClick={() => handleFundContract(lease.contractAddress)}>
-              Fund
-            </button>
+              <button onClick={() => handleFundContract(lease.contractAddress)}>
+                Fund
+              </button>
+
           </li>
         ))}
       </ul>
