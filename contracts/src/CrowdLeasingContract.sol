@@ -149,6 +149,8 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
 
         hasActiveLeasingRequest[msg.sender] = true;
 
+        require(leasingRequests[newLeaseId].status == State.Active, "Failed to set status to Active");
+
         // Emit an event to notify that a new leasing request has been created
         emit LeasingRequestCreated(newLeaseId, msg.sender, _amount, _duration, fundingDeadline, _tokenPrice);
 
@@ -166,6 +168,17 @@ contract CrowdLeasingContract is ReentrancyGuard, ERC20, Ownable {
         require(request.status == State.Active, "Leasing request is not active");
         return request.amount - request.fundedAmount;
     }
+
+    /**
+     * @dev Returns the current status of a leasing request.
+     * @param _leaseId The ID of the leasing request.
+     * @return The current state of the leasing request.
+     */
+    function getStatus(uint256 _leaseId) external view returns (State) {
+        LeasingRequest storage request = leasingRequests[_leaseId];
+        return request.status;
+    }
+
 
     /**
      * @dev Allows users to invest in an active leasing request by sending Ether.
