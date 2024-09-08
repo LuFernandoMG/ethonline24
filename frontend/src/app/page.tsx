@@ -225,10 +225,10 @@ const handleCreateLeasingContract = async () => {
         <h3>Create Leasing Request</h3>
         <input type="text" placeholder="Token Name" value={tokenName} onChange={e => setTokenName(e.target.value)} />
         <input type="text" placeholder="Token Symbol" value={tokenSymbol} onChange={e => setTokenSymbol(e.target.value)} />
-        <input type="text" placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} />
+        <input type="text" placeholder="Amount (tRBTC)" value={amount} onChange={e => setAmount(e.target.value)} />
         <input type="text" placeholder="Duration (days)" value={duration} onChange={e => setDuration(e.target.value)} />
         <input type="text" placeholder="Funding Period (days)" value={fundingPeriod} onChange={e => setFundingPeriod(e.target.value)} />
-        <input type="text" placeholder="Token Price" value={tokenPrice} onChange={e => setTokenPrice(e.target.value)} />
+        <input type="text" placeholder="Token Price (tRBTC)" value={tokenPrice} onChange={e => setTokenPrice(e.target.value)} />
         <button onClick={handleCreateLeasingContract}>Submit Leasing Request</button>
       </div>
     </div>
@@ -248,7 +248,7 @@ const handleCreateLeasingContract = async () => {
           {activeLeasingRequests.map((lease, idx) => (
             <li key={idx}>
               <p>Contract Address: {lease.contractAddress}</p>
-              <p>Remaining Amount: {lease.remainingAmount} ethers</p>
+              <p>Remaining Amount: {lease.remainingAmount} tRBTC</p>
   
               {/* Input for investment amount */}
               <input

@@ -356,11 +356,12 @@
   color: #010101; /* Color de texto */
 }
 .refreshButton {
+  margin-top: 5rem;
   background-color: #007bff; /* Blue background */
   color: #fff; /* White text */
   border: 2px solid #007bff; /* Blue border */
-  border-radius: 10px; /* Rounded corners */
-  padding: 0.75rem 1.5rem; /* Padding for the button */
+  border-radius: 5px; /* Rounded corners */
+  padding: 0.2rem 0.5rem; /* Padding for the button */
   font-size: 1.2rem; /* Larger text for the button */
   cursor: pointer;
   transition: background-color 0.3s ease, border-color 0.3s ease;
