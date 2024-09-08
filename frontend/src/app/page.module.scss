@@ -152,19 +152,3 @@
   fill: rgba(255, 255, 255, 0.5);
 }
 
-.button {
-  background-color: #010101;
-  border-radius: 10px;
-  border: 1px solid #010101ad;
-  padding: 0.5rem 1rem;
-  color: #f6ebe6;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin: 2rem;
-}
-
-.button:hover {
-  transition: all 0.3s ease;
-  background-color: #010101ad;
-}

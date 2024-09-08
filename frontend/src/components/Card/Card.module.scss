@@ -1,0 +1,122 @@
+.card {
+    width: 210px;
+    height: 140px;
+    position: relative;
+    overflow: visible;
+    display: block;
+}
+
+.card__container {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    position: absolute;
+    transition: 0.5s;
+    
+    img {
+        border-radius: 5px;
+    }
+
+    .cardHovered__info {
+        display: none;
+        width: 100%;
+        color: white;
+    }
+}
+
+.card__container:hover {
+    transform: scale(1.3);
+    border-radius: 5px;
+    position: absolute;
+    z-index: 5;
+    box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.5);
+
+    img {
+        border-radius: 5px 5px 0 0;
+    }
+
+    .cardHovered__info {
+        display: block;
+        background:rgb(12, 31, 49);
+        padding: 10px;
+        transform: translateY(-4px);
+        border-radius: 0 0 5px 5px;
+        box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.5);
+
+
+        h3 {
+            font-size: 1rem;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    }
+}
+
+.icons {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0 0 0;
+
+    a {
+        background: none;
+        width: 24px;
+        border: 1px solid white;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+.icons {
+    a:hover {
+        background: white;
+        color: rgb(12, 31, 49);
+        transition: 0.2s;
+    }
+}
+
+.score {
+    font-size: .6rem;
+    font-weight: 300;
+    color: #d6d6d6;
+    padding: 5px 0;
+}
+
+@media screen and (max-width: 768px) {
+    .card {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .card__container {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .card__container:hover {
+        transform: scale(1.1);
+    }
+    
+    .card__container:hover img {
+        border-radius: 5px;
+    }
+    
+    .card__container:hover .cardHovered__info {
+        display: block;
+        background:rgb(12, 31, 49);
+        padding: 10px;
+        transform: translateY(0);
+        border-radius: 0 0 5px 5px;
+        box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.5);
+    }
+    
+    .card__container:hover .cardHovered__info h3 {
+        font-size: 1rem;
+        padding-bottom: 0.2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    }
+}
