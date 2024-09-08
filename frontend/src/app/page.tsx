@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styles from "./page.module.scss";
 import Image from "next/image";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
@@ -335,6 +335,8 @@ const handleCreateLeasingContract = async () => {
       </div>
     </div>
   );
+
+  return loggedIn === undefined ? loggedInView : unloggedInView;
 }
 
 export default App;

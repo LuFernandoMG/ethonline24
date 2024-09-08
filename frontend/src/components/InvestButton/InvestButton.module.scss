@@ -1,0 +1,45 @@
+.icon {
+    font-size: 1.1rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: white;
+    background-color: transparent;
+    border: 1px solid white;
+    border-radius: 50%;
+}
+
+.icon:hover {
+    background-color: white;
+    color: #12161d;
+    transition: all 0.3s;
+}
+
+.fav {
+    font-size: 1.1rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: #12161d;
+    background-color: white;
+    border: 1px solid white;
+    border-radius: 50%;
+}
+
+.fav:hover {
+    background-color: #12161d;
+    color: white;
+    transition: all 0.3s;
+}
+
+.sm {
+    height: 24px;
+    width: 24px;
+    font-size: 0.8rem;
+}
