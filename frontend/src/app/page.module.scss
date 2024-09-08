@@ -224,3 +224,147 @@
   background-color: rgba(0, 0, 0, 0.4); // Adds a semi-transparent black background
   z-index: 999; // Places it just below the popup but above other elements
 }
+.borrowerFormContainer {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.formTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #010101;
+  text-align: center;
+}
+
+.inputGroup {
+  margin-bottom: 1rem;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.3s ease;
+}
+
+.inputGroup input:focus {
+  border-color: #1d72b8;
+  outline: none;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  color: white;
+  background-color: #1d72b8;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.submitButton:hover {
+  background-color: #155a8a;
+}
+
+.formContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70%; /* Ajusta el ancho al 70% del contenedor padre */
+  max-width: 600px; /* Define un ancho máximo */
+  margin: 6rem auto 0; /* Ajusta el margen superior para separación y alinea horizontalmente */
+}
+
+.form {
+  width: 100%; /* Asegura que el formulario use el ancho del contenedor */
+  background-color: #ffffff; /* Fondo blanco para el formulario */
+  padding: 1rem; /* Espaciado interno del formulario */
+  border-radius: 10px; /* Bordes redondeados */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+}
+
+.form h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.form input {
+  width: calc(100% - 1rem); /* Ajusta el ancho de los inputs */
+  padding: 0.5rem;
+  margin-bottom: 1rem; /* Espaciado inferior entre los inputs */
+  border: 1px solid #ddd; /* Borde sutil */
+  border-radius: 5px; /* Bordes redondeados para los inputs */
+}
+
+.form button {
+  background-color: #010101;
+  border-radius: 10px;
+  border: 1px solid #010101ad;
+  padding: 0.5rem;
+  color: #f6ebe6;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%; /* Botón ocupa el ancho completo del formulario */
+}
+
+.form button:hover {
+  background-color: #010101ad;
+}
+.profile {
+  position: absolute; /* Usa absolute para posicionarlo relativo a su contenedor padre */
+  top: 2rem; /* Distancia desde la parte superior del contenedor padre */
+  right: 13rem; /* Distancia desde el borde derecho */
+  width: 100%; /* Ajusta el ancho al 40% del contenedor del formulario */
+  max-width: 400px; /* Define un ancho máximo */
+  background-color: #ffffff; /* Fondo blanco para el perfil */
+  padding: 0.5rem; /* Espaciado interno del perfil */
+  border-radius: 10px; /* Bordes redondeados */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  text-align: left; /* Justifica el contenido */
+  z-index: 10; /* Asegura que esté por encima de otros elementos */
+  height: auto; /* Ajusta la altura automáticamente según el contenido */
+}
+
+.profile h3 {
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile p {
+  margin: 0.5rem 0; /* Espaciado entre líneas */
+  font-size: 0.875rem; /* Tamaño de fuente más pequeño */
+  color: #010101; /* Color de texto */
+}
+.refreshButton {
+  background-color: #007bff; /* Blue background */
+  color: #fff; /* White text */
+  border: 2px solid #007bff; /* Blue border */
+  border-radius: 10px; /* Rounded corners */
+  padding: 0.75rem 1.5rem; /* Padding for the button */
+  font-size: 1.2rem; /* Larger text for the button */
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  margin-bottom: 0.1rem; /* Space below the button */
+  /* Add more margin if needed */
+}
+

@@ -152,7 +152,7 @@ const handleCreateLeasingContract = async () => {
   const handleFundContract = async (contractAddress) => {
     try {
       if (provider && investmentAmounts[contractAddress]) {
-        // Obtener las cuentas a través de Web3Auth provider
+        
         const accounts = await provider.request({ method: "eth_accounts" });
         
         if (!accounts || accounts.length === 0) {
@@ -160,16 +160,16 @@ const handleCreateLeasingContract = async () => {
           return;
         }
   
-        const fromAddress = accounts[0]; // Obtener la cuenta del usuario autenticado
+        const fromAddress = accounts[0];
         
-        // Convierte investmentAmount a número y luego a string para asegurar la conversión
+        // convert investmentAmount to number to string
         const formattedInvestmentAmount = parseFloat(investmentAmounts[contractAddress]);
         if (isNaN(formattedInvestmentAmount) || formattedInvestmentAmount <= 0) {
           alert("Please enter a valid investment amount.");
           return;
         }
   
-        // Llama a la función fundLeasingContract con el monto de inversión
+        // Call the function fundLeasingContract
         await fundLeasingContract(contractAddress, fromAddress, formattedInvestmentAmount.toString(), provider);
         alert("Investment successful!");
       } else {
@@ -214,8 +214,6 @@ const handleCreateLeasingContract = async () => {
   };
   
   
-
-
   const handleTypeUser = (event: any) => {
     setUserType(event.target.value);
   };
@@ -235,6 +233,8 @@ const handleCreateLeasingContract = async () => {
       </div>
     </div>
   );
+  
+  
 
   // Render for investor (list of active leases)
   const investorView = (
@@ -303,6 +303,7 @@ const handleCreateLeasingContract = async () => {
       <p><strong>Balance:</strong> {balance} tRBTC</p>
     </div>
   );
+  
 
   return (
     <div className={styles.container}>
@@ -322,13 +323,13 @@ const handleCreateLeasingContract = async () => {
               </label>
             </div>
             <p>Start your journey by selecting your role and logging in!</p>
-            <button className={styles.start_button} onClick={login}>Start your journey!</button>
+            <button className={styles.button} onClick={login}>Start your journey!</button>
           </>
         ) : (
           <>
             {profileView}
             {userType === "borrower" ? borrowerForm : investorView}
-            <button className={styles.logout_button} onClick={logout}>Logout</button>
+            <button className={styles.login_button} onClick={logout}>Logout</button>
           </>
         )}
       </div>
