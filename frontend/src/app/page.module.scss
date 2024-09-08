@@ -168,3 +168,59 @@
   transition: all 0.3s ease;
   background-color: #010101ad;
 }
+
+// Styles for the loading popup
+.popup {
+  position: fixed; /* Keeps the popup fixed in the viewport */
+  top: 50%; /* Vertically centers the popup */
+  left: 50%; /* Horizontally centers the popup */
+  transform: translate(-50%, -50%); /* Corrects the position to center the popup */
+  width: 300px; /* Sets a wider width for the popup */
+  padding: 30px; /* Adds more padding for a larger popup */
+  background-color: #f9f9f9; /* Lighter background color */
+  border-radius: 15px; /* Rounded corners */
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3); /* Slightly deeper shadow */
+  text-align: center; /* Centers the text */
+  z-index: 1000; /* Ensures it appears on top */
+  font-size: 1.2rem; /* Makes the text a bit larger */
+}
+
+.popup .close-btn {
+  position: absolute; /* Positions the close button at the top-right */
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.popup .message {
+  color: #28a745; /* Green color for success message */
+  font-weight: bold;
+}
+
+.popup .loading {
+  color: #000; /* Black color for loading text */
+}
+
+.popup .success {
+  color: #28a745; /* Green color for success text */
+}
+
+
+.popupText {
+  font-size: 1rem; // Sets the font size of the popup text
+  color: #010101; // Sets the text color to dark for contrast
+}
+
+// Style for the overlay behind the popup
+.popupOverlay {
+  position: fixed; // Fixes the overlay in the viewport
+  top: 0; // Starts at the top of the page
+  left: 0; // Starts at the left side of the page
+  width: 100%; // Covers the entire width of the viewport
+  height: 100%; // Covers the entire height of the viewport
+  background-color: rgba(0, 0, 0, 0.4); // Adds a semi-transparent black background
+  z-index: 999; // Places it just below the popup but above other elements
+}

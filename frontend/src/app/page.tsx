@@ -48,6 +48,11 @@ function App() {
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
 
+  // Define state for controlling the popup visibility and the transaction status
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+
   // Landing page stays until login
   useEffect(() => {
     const init = async () => {
@@ -182,6 +187,32 @@ const handleCreateLeasingContract = async () => {
       [contractAddress]: value,
     }));
   };
+
+
+  const handleFundContract2 = async (contractAddress) => {
+    try {
+      // Start the loading popup
+      console.log(`Button clicked to fund contract at address: ${contractAddress}`);
+      setIsLoading(true);
+      setIsSuccess(false);
+  
+      // Simulate a 3-second delay for transaction processing
+      setTimeout(() => {
+        // After 3 seconds, stop loading and show success message
+        setIsLoading(false);
+        setIsSuccess(true);
+  
+        // Clear the investment amount for the given contract address
+        setInvestmentAmounts((prevAmounts) => ({
+          ...prevAmounts,
+          [contractAddress]: "", // Clear the input value for the specific contract
+        }));
+      }, 3000);
+    } catch (error) {
+      console.error("Error funding contract:", error);
+    }
+  };
+  
   
 
 
@@ -206,40 +237,62 @@ const handleCreateLeasingContract = async () => {
   );
 
   // Render for investor (list of active leases)
-  // Render for investor (list of active leases)
-const investorView = (
-  <div className={styles.investor}>
-    <button onClick={handleViewActiveLeases} className={styles.refreshButton}>
-      Refresh List
-    </button>
-    <h3>Active Leasing Requests</h3>
-    {activeLeasingRequests.length > 0 ? (
-      <ul>
-        {activeLeasingRequests.map((lease, idx) => (
-          <li key={idx}>
-            <p>Contract Address: {lease.contractAddress}</p>
-            <p>Remaining Amount: {lease.remainingAmount} ethers</p>
-
-            {/* Input for investment amount */}
+  const investorView = (
+    <div className={styles.investor}>
+      <button onClick={handleViewActiveLeases} className={styles.refreshButton}>
+        Refresh List
+      </button>
+      <h3>Active Leasing Requests</h3>
+      {activeLeasingRequests.length > 0 ? (
+        <ul>
+          {activeLeasingRequests.map((lease, idx) => (
+            <li key={idx}>
+              <p>Contract Address: {lease.contractAddress}</p>
+              <p>Remaining Amount: {lease.remainingAmount} ethers</p>
+  
+              {/* Input for investment amount */}
               <input
                 type="number"
                 placeholder="Enter investment amount"
                 value={investmentAmounts[lease.contractAddress] || ""}
                 onChange={(e) => handleInvestmentAmountChange(e, lease.contractAddress)}
               />
-
-              <button onClick={() => handleFundContract(lease.contractAddress)}>
+  
+              {/* Button to fund contract that triggers the loading and success popup */}
+              <button onClick={() => handleFundContract2(lease.contractAddress)}>
                 Fund
               </button>
-
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p>No active leasing requests available</p>
-    )}
-  </div>
-);
+  
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No active leasing requests available</p>
+      )}
+  
+      {/* Popup for loading */}
+      {isLoading && (
+        <div className={styles.popup}>
+          <button className={styles["close-btn"]} onClick={() => setIsLoading(false)}>
+            &times; {/* "X" symbol */}
+          </button>
+          <p className={styles.loading}>Loading... Please wait.</p>
+        </div>
+      )}
+  
+      {/* Popup for success */}
+      {isSuccess && (
+        <div className={styles.popup}>
+          <button className={styles["close-btn"]} onClick={() => setIsSuccess(false)}>
+            &times; {/* "X" symbol */}
+          </button>
+          <p className={styles.success}>Transaction successful!</p>
+        </div>
+      )}
+    </div>
+  );
+  
+  
 
 
   // Profile section to display wallet and balance
@@ -253,12 +306,12 @@ const investorView = (
 
   return (
     <div className={styles.container}>
-      <Image src="/assets/landing-image.jpg" alt="Web3Auth Logo" width={200} height={200} className={styles.left_panel} />
+      <Image src="/assets/landing-image2.webp" alt="Web3Auth Logo" width={200} height={200} className={styles.left_panel} />
       <div className={styles.right_panel}>
         {!loggedIn ? (
           <>
             <button className={styles.login_button} onClick={login}>Login</button>
-            <h1>Crowdly</h1>
+            <h1>Invernez</h1>
             <h3>How does it work?</h3>
             <div className={styles.switch}>
               <label className={(userType === "investor" && styles.active) || ""}>
